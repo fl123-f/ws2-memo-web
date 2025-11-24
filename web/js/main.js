@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // memo-list の要素を取得
+    // メモ一覧を表示する要素
     const memoList = document.getElementById('memo-list');
 
     console.log('ページ読み込み完了。get_memos.php を呼び出します…');
 
-    // fetch でバックエンドから JSON データを取得
+    // --- メモ一覧取得処理 ---
     fetch('api/get_memos.php')
         .then(response => {
             console.log('HTTP status:', response.status);
@@ -35,12 +35,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 // メモを一覧表示
                 const ul = document.createElement('ul');
                 data.forEach(memo => {
+                    // category があれば [カテゴリ] 表示する
+                    const categoryLabel = memo.category ? `[${memo.category}] ` : '';
+
                     const li = document.createElement('li');
-                    li.innerHTML = `<strong>${memo.title}</strong> - ${memo.date}<br>${memo.content}`;
+                    li.innerHTML = `
+                        <strong>${categoryLabel}${memo.title}</strong> - ${memo.date}<br>
+                        ${memo.content}
+                    `;
                     ul.appendChild(li);
                 });
 
-                memoList.innerHTML = ''; // 読み込み中の文字を消す
+                memoList.innerHTML = ''; // 「読み込み中…」を消す
                 memoList.appendChild(ul);
                 return;
             }
@@ -54,39 +60,54 @@ document.addEventListener('DOMContentLoaded', () => {
             memoList.innerHTML = '<p>データの取得に失敗しました。</p>';
         });
 
-        // 新規メモ作成用の要素を取得
-const saveBtn = document.getElementById('save-memo');
-const memoTitle = document.getElementById('memo-title');
-const memoContent = document.getElementById('memo-content');
+    // --- 新規メモ作成用の要素 ---
+    const saveBtn      = document.getElementById('save-memo');
+    const memoTitle    = document.getElementById('memo-title');
+    const memoContent  = document.getElementById('memo-content');
+    const memoCategory = document.getElementById('memo-category'); // カテゴリ入力（なければ null）
 
-saveBtn.addEventListener('click', () => {
-    const title = memoTitle.value.trim();
-    const content = memoContent.value.trim();
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const title   = memoTitle.value.trim();
+            const content = memoContent.value.trim();
+            const category = memoCategory ? memoCategory.value.trim() : '';
 
-    if (!title || !content) {
-        alert('タイトルと内容を入力してください。');
-        return;
+            if (!title || !content) {
+                alert('タイトルと内容を入力してください。');
+                return;
+            }
+
+            // --- メモ保存 API 呼び出し ---
+            fetch('api/save_memo.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content, category })
+            })
+            .then(res => res.text())  // デバッグのため text で受ける
+            .then(text => {
+                console.log('save_memo.php 生のレスポンス:');
+                console.log(text);
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('save_memo.php JSON parse error:', e);
+                    alert('サーバーからのレスポンスが不正です。コンソールを確認してください。');
+                    return;
+                }
+
+                if (data.success) {
+                    alert('メモを保存しました！');
+                    location.reload(); // 保存後にメモ一覧を更新
+                } else {
+                    alert('保存に失敗しました。');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('通信エラーが発生しました。');
+            });
+        });
     }
-
-    // ここでは API を呼び出して保存する
-    fetch('api/save_memo.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            alert('メモを保存しました！');
-            location.reload(); // 保存後にメモ一覧を更新
-        } else {
-            alert('保存に失敗しました。');
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert('通信エラーが発生しました。');
-    });
-});
-
 });
