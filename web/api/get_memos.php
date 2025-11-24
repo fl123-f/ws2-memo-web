@@ -10,10 +10,10 @@ $db = new SQLite3($dbFile);
 
 // テーブルが存在しない場合は作成
 $db->exec("CREATE TABLE IF NOT EXISTS memos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,   // ID（自動増分）
-    title TEXT NOT NULL,                     // メモのタイトル
-    content TEXT NOT NULL,                   // メモの内容
-    date TEXT NOT NULL                       // 作成日
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,                     
+    content TEXT NOT NULL,                   
+    date TEXT NOT NULL                       
 )");
 
 // テーブルが空の場合、テスト用のデータを挿入
