@@ -53,4 +53,40 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('fetch error:', err);
             memoList.innerHTML = '<p>データの取得に失敗しました。</p>';
         });
+
+        // 新規メモ作成用の要素を取得
+const saveBtn = document.getElementById('save-memo');
+const memoTitle = document.getElementById('memo-title');
+const memoContent = document.getElementById('memo-content');
+
+saveBtn.addEventListener('click', () => {
+    const title = memoTitle.value.trim();
+    const content = memoContent.value.trim();
+
+    if (!title || !content) {
+        alert('タイトルと内容を入力してください。');
+        return;
+    }
+
+    // ここでは API を呼び出して保存する
+    fetch('api/save_memo.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('メモを保存しました！');
+            location.reload(); // 保存後にメモ一覧を更新
+        } else {
+            alert('保存に失敗しました。');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('通信エラーが発生しました。');
+    });
+});
+
 });
