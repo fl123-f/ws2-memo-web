@@ -1,74 +1,65 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // メモ一覧を表示する要素
     const memoList = document.getElementById('memo-list');
+    const saveBtn = document.getElementById('save-memo');
+    const memoTitle = document.getElementById('memo-title');
+    const memoContent = document.getElementById('memo-content');
+    const memoCategory = document.getElementById('memo-category'); // カテゴリ入力（なければ null）
 
-    console.log('ページ読み込み完了。get_memos.php を呼び出します…');
+    // --- メモ一覧取得と表示 ---
+    function loadMemos() {
+        fetch('api/get_memos.php')
+            .then(res => res.text()) // 先用 text 调试
+            .then(text => {
+                console.log('get_memos.php 生のレスポンス:');
+                console.log(text);
 
-    // --- メモ一覧取得処理 ---
-    fetch('api/get_memos.php')
-        .then(response => {
-            console.log('HTTP status:', response.status);
-            return response.text();   // まずは text として受け取る
-        })
-        .then(text => {
-            console.log('生のレスポンス:');
-            console.log(text);
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    memoList.innerHTML = '<p>JSON のパースに失敗しました。</p>';
+                    return;
+                }
 
-            let data;
-            try {
-                // JSON 文字列をオブジェクトに変換
-                data = JSON.parse(text);
-            } catch (e) {
-                // JSON 変換失敗時のエラーハンドリング
-                memoList.innerHTML = '<p>JSON のパースに失敗しました。</p>';
-                console.error('JSON parse error:', e);
-                return;
-            }
-
-            // データが配列かどうかを確認
-            if (Array.isArray(data)) {
-                if (data.length === 0) {
+                if (!Array.isArray(data) || data.length === 0) {
                     memoList.innerHTML = '<p>メモはありません。</p>';
                     return;
                 }
 
-                // メモを一覧表示
                 const ul = document.createElement('ul');
-                data.forEach(memo => {
-                    // category があれば [カテゴリ] 表示する
-                    const categoryLabel = memo.category ? `[${memo.category}] ` : '';
+                ul.style.listStyle = 'none';
+                ul.style.padding = '0';
 
+                data.forEach(memo => {
                     const li = document.createElement('li');
+                    li.style.border = '1px solid #ccc';
+                    li.style.padding = '8px';
+                    li.style.marginBottom = '6px';
+                    li.style.borderRadius = '4px';
                     li.innerHTML = `
-                        <strong>${categoryLabel}${memo.title}</strong> - ${memo.date}<br>
-                        ${memo.content}
+                        <div><strong>${memo.title}</strong> <span style="color: #888;">(${memo.date})</span></div>
+                        <div>${memo.content}</div>
                     `;
                     ul.appendChild(li);
                 });
 
-                memoList.innerHTML = ''; // 「読み込み中…」を消す
+                memoList.innerHTML = '';
                 memoList.appendChild(ul);
-                return;
-            }
+            })
+            .catch(err => {
+                console.error('fetch error:', err);
+                memoList.innerHTML = '<p>データの取得に失敗しました。</p>';
+            });
+    }
 
-            // 予期しないレスポンス形式の場合
-            memoList.innerHTML = '<p>予期しないレスポンス形式です。</p>';
-        })
-        .catch(err => {
-            // fetch 自体のエラー処理
-            console.error('fetch error:', err);
-            memoList.innerHTML = '<p>データの取得に失敗しました。</p>';
-        });
+    // 初回読み込み
+    loadMemos();
 
-    // --- 新規メモ作成用の要素 ---
-    const saveBtn      = document.getElementById('save-memo');
-    const memoTitle    = document.getElementById('memo-title');
-    const memoContent  = document.getElementById('memo-content');
-    const memoCategory = document.getElementById('memo-category'); // カテゴリ入力（なければ null）
-
+    // --- 新規メモ保存 ---
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
-            const title   = memoTitle.value.trim();
+            const title = memoTitle.value.trim();
             const content = memoContent.value.trim();
             const category = memoCategory ? memoCategory.value.trim() : '';
 
@@ -77,37 +68,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // --- メモ保存 API 呼び出し ---
             fetch('api/save_memo.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, content, category })
             })
-            .then(res => res.text())  // デバッグのため text で受ける
-            .then(text => {
-                console.log('save_memo.php 生のレスポンス:');
-                console.log(text);
+                .then(res => res.text())
+                .then(text => {
+                    console.log('save_memo.php 生のレスポンス:');
+                    console.log(text);
 
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.error('save_memo.php JSON parse error:', e);
-                    alert('サーバーからのレスポンスが不正です。コンソールを確認してください。');
-                    return;
-                }
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        console.error('save_memo.php JSON parse error:', e);
+                        alert('サーバーからのレスポンスが不正です。コンソールを確認してください。');
+                        return;
+                    }
 
-                if (data.success) {
-                    alert('メモを保存しました！');
-                    location.reload(); // 保存後にメモ一覧を更新
-                } else {
-                    alert('保存に失敗しました。');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('通信エラーが発生しました。');
-            });
+                    if (data.success) {
+                        alert('メモを保存しました！');
+                        // 入力欄クリア
+                        memoTitle.value = '';
+                        memoContent.value = '';
+                        if (memoCategory) memoCategory.value = '';
+                        // メモ一覧更新
+                        loadMemos();
+                    } else {
+                        alert('保存に失敗しました：' + (data.message || ''));
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('通信エラーが発生しました。');
+                });
         });
     }
 });
