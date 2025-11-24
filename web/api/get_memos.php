@@ -8,21 +8,22 @@ $dbFile = __DIR__ . '/../../data/memo.db';
 // SQLite3 データベース接続を作成
 $db = new SQLite3($dbFile);
 
-// テーブルが存在しない場合は作成
+// テーブルが存在しない場合は作成（category 列を追加）
 $db->exec("CREATE TABLE IF NOT EXISTS memos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,                     
-    content TEXT NOT NULL,                   
-    date TEXT NOT NULL                       
+    id INTEGER PRIMARY KEY AUTOINCREMENT,   
+    title TEXT NOT NULL,                    
+    content TEXT NOT NULL,                 
+    category TEXT,                          
+    date TEXT NOT NULL                      
 )");
 
 // テーブルが空の場合、テスト用のデータを挿入
 $result = $db->query("SELECT COUNT(*) AS count FROM memos");
 $count = $result->fetchArray(SQLITE3_ASSOC)['count'];
 if ($count == 0) {
-    $db->exec("INSERT INTO memos (title, content, date) VALUES
-        ('テストメモ1', 'これはテスト内容1です', '2025-11-24'),
-        ('テストメモ2', 'これはテスト内容2です', '2025-11-23')
+    $db->exec("INSERT INTO memos (title, content, category, date) VALUES
+        ('テストメモ1', 'これはテスト内容1です', '未分類', '2025-11-24'),
+        ('テストメモ2', 'これはテスト内容2です', '未分類', '2025-11-23')
     ");
 }
 
