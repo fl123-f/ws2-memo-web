@@ -1,6 +1,25 @@
-<form id="memo-form">
-  <input type="text" name="title" placeholder="タイトル">
-  <textarea name="content" placeholder="内容"></textarea>
-  <button type="submit">保存</button>
-</form>
-<script src="js/main.js"></script>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>メモ編集</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>メモ編集</h1>
+    <form id="edit-memo-form">
+        <label for="memo-title">タイトル:</label><br>
+        <input type="text" id="memo-title" name="title" required><br><br>
+
+        <label for="memo-content">内容:</label><br>
+        <textarea id="memo-content" name="content" rows="6" required></textarea><br><br>
+
+        <label for="memo-category">カテゴリ:</label><br>
+        <input type="text" id="memo-category" name="category"><br><br>
+
+        <button type="submit">保存</button>
+    </form>
+
+    <script src="js/edit_memo.js"></script>
+</body>
+</html>

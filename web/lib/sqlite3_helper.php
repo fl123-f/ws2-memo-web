@@ -56,4 +56,17 @@ class SQLite3Helper {
         }
         return $memos;
     }
+
+    // 既存の SQLite3Helper クラスに追加
+public function updateMemo($id, $title, $content, $category = '') {
+    $stmt = $this->db->prepare("UPDATE memos SET title = :title, content = :content, category = :category WHERE id = :id");
+    if (!$stmt) return false;
+    $stmt->bindValue(':title', $title, SQLITE3_TEXT);
+    $stmt->bindValue(':content', $content, SQLITE3_TEXT);
+    $stmt->bindValue(':category', $category, SQLITE3_TEXT);
+    $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+    return $stmt->execute() ? true : false;
 }
+
+}
+
