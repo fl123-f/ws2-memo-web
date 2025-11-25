@@ -2,40 +2,57 @@
 class SQLite3Helper {
     private $db;
 
-    // コンストラクタ: データベース接続を作成し、テーブルを初期化
+    // 构造函数：连接数据库并初始化表
     public function __construct($file) {
         $this->db = new SQLite3($file);
         $this->initTable();
     }
 
-    // テーブルの初期化（存在しなければ作成）
+    // 初始化表
     private function initTable() {
         $this->db->exec("CREATE TABLE IF NOT EXISTS memos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,  // ID（自動増分）
-            title TEXT NOT NULL,                   // メモのタイトル
-            content TEXT NOT NULL,                 // メモの内容
-            category TEXT,                         // カテゴリ（任意）
-            date TEXT NOT NULL                     // 作成日
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            category TEXT,
+            date TEXT NOT NULL
         )");
     }
 
-    // 新しいメモを挿入
+    // 插入新备忘录
     public function insertMemo($title, $content, $category = '') {
-        $stmt = $this->db->prepare("INSERT INTO memos (title, content, category, date) VALUES (:title, :content, :category, :date)");
-        if (!$stmt) return false;
+        $title = trim($title);
+        $content = trim($content);
+        $category = trim($category);
+
+        if ($title === '' || $content === '') {
+            return ['success' => false, 'message' => 'タイトルと内容は必須です'];
+        }
+
+        $stmt = $this->db->prepare(
+            "INSERT INTO memos (title, content, category, date) 
+             VALUES (:title, :content, :category, :date)"
+        );
+
         $stmt->bindValue(':title', $title, SQLITE3_TEXT);
         $stmt->bindValue(':content', $content, SQLITE3_TEXT);
         $stmt->bindValue(':category', $category, SQLITE3_TEXT);
-        $stmt->bindValue(':date', date('Y-m-d'), SQLITE3_TEXT); // 今日の日付
-        return $stmt->execute() ? true : false;
+        $stmt->bindValue(':date', date('Y-m-d'), SQLITE3_TEXT);
+
+        $result = $stmt->execute();
+        if ($result) {
+            return ['success' => true];
+        } else {
+            return ['success' => false, 'message' => 'データベースに保存できませんでした'];
+        }
     }
 
-    // すべてのメモを取得（作成日降順）
+    // 获取所有备忘录（按日期降序）
     public function getAllMemos() {
         $result = $this->db->query("SELECT * FROM memos ORDER BY date DESC");
         $memos = [];
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-            $memos[] = $row; // 配列に追加
+            $memos[] = $row;
         }
         return $memos;
     }

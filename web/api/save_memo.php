@@ -1,29 +1,26 @@
 <?php
-header('Content-Type: application/json; charset=utf-8'); 
+header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/../lib/sqlite3_helper.php';  // 引入 Helper
+require_once __DIR__ . '/../lib/sqlite3_helper.php';
 
-// 数据库路径（从 api 目录往上两层到 code，再进入 data）
-$db = new SQLite3Helper(__DIR__ . '/../../data/memo.db');
+try {
+    // 数据库文件路径
+    $dbFile = __DIR__ . '/../../data/memo.db';
+    $db = new SQLite3Helper($dbFile);
 
-$data = json_decode(file_get_contents('php://input'), true);
+    // 获取 POST JSON
+    $data = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($data['title']) || !isset($data['content'])) {
-    echo json_encode(['success' => false, 'message' => 'タイトルと内容が必要です']);
-    exit;
-}
+    $title = isset($data['title']) ? $data['title'] : '';
+    $content = isset($data['content']) ? $data['content'] : '';
+    $category = isset($data['category']) ? $data['category'] : '';
 
-$title = trim($data['title']);
-$content = trim($data['content']);
-$category = isset($data['category']) ? trim($data['category']) : '';
+    $result = $db->insertMemo($title, $content, $category);
 
-$ok = $db->insertMemo($title, $content, $category);
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
 
-if ($ok) {
-    echo json_encode(['success' => true]);
-} else {
-    echo json_encode(['success' => false, 'message' => 'データベースに保存できませんでした']);
+} catch (Exception $e) {
+    echo json_encode(['success'=>false, 'message'=>$e->getMessage()], JSON_UNESCAPED_UNICODE);
 }
