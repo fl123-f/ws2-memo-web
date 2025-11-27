@@ -3,25 +3,36 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>メモ一覧</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>学習メモ＆資料整理アプリ</title>
 </head>
 
 <body>
-    <h1>メモ一覧</h1>
+    <h1>学習メモ＆資料整理アプリ</h1>
 
-    <!-- 新規メモ作成フォーム -->
     <div id="new-memo">
         <h3>新しいメモを作成</h3>
-        <input type="text" id="memo-title" placeholder="タイトル"><br>
-        <input type="text" id="memo-category" placeholder="カテゴリ(任意)"><br>
-        <textarea id="memo-content" placeholder="内容"></textarea><br>
+        <input type="text" id="memo-title" placeholder="タイトル">
+        <select id="memo-category">
+            <option value="">未分類</option>
+            <option value="授業ノート">授業ノート</option>
+            <option value="課題・宿題">課題・宿題</option>
+            <option value="試験対策">試験対策</option>
+            <option value="課外学習">課外学習</option>
+            <option value="プログラミング">プログラミング</option>
+            <option value="Web開発">Web開発</option>
+            <option value="データ分析">データ分析</option>
+            <option value="技術メモ">技術メモ</option>
+            <option value="参考資料">参考資料</option>
+            <option value="まとめ">まとめ</option>
+            <option value="書籍ノート">書籍ノート</option>
+            <option value="講義資料">講義資料</option>
+            <option value="リファレンス">リファレンス</option>
+        </select>
+        <textarea id="memo-content" placeholder="内容"></textarea>
         <button id="save-memo">保存する</button>
     </div>
 
-    <hr>
-
-    <!-- メモ一覧表示 -->
     <div id="memo-list">読み込み中…</div>
 
     <script src="js/main.js"></script>

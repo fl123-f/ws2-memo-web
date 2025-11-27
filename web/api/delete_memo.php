@@ -1,41 +1,31 @@
 <?php
-ini_set('display_errors', '0');
-error_reporting(0);
 header('Content-Type: application/json; charset=utf-8');
 
+// 数据库文件
+$dbFile = __DIR__ . '/../../data/memo.db';
+$db = new SQLite3($dbFile);
+
+// 获取 ID，可以是 GET 或 POST
 $id = $_GET['id'] ?? null;
 if ($id === null) {
-    echo json_encode(['success' => false, 'message' => 'id is required']);
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = $data['id'] ?? null;
+}
+
+if ($id === null) {
+    echo json_encode(['success'=>false, 'message'=>'IDが指定されていません']);
     exit;
 }
 
-$id = intval($id);
+$id = (int)$id; // 强制转换为整数
 if ($id <= 0) {
-    echo json_encode(['success' => false, 'message' => 'invalid id']);
+    echo json_encode(['success'=>false, 'message'=>'無効なIDです']);
     exit;
 }
 
-try {
-    // delete_memo.php 在 web\api，项目根的 data 在 ../../data
-    $dbPath = __DIR__ . '/../../data/memo.db';
-    if (!file_exists($dbPath)) {
-        echo json_encode(['success' => false, 'message' => 'database not found']);
-        exit;
-    }
+$stmt = $db->prepare("DELETE FROM memos WHERE id=:id");
+$stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+$res = $stmt->execute();
 
-    $db = new SQLite3($dbPath);
-    $stmt = $db->prepare('DELETE FROM memos WHERE id = :id');
-    $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
-    $stmt->execute();
-
-    if ($db->changes() > 0) {
-        echo json_encode(['success' => true]);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'not found']);
-    }
-
-    $db->close();
-} catch (Exception $e) {
-    error_log($e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'server error']);
-}
+if ($res) echo json_encode(['success'=>true]);
+else echo json_encode(['success'=>false, 'message'=>'削除に失敗しました']);

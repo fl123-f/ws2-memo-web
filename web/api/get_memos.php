@@ -17,16 +17,6 @@ $db->exec("CREATE TABLE IF NOT EXISTS memos (
     date TEXT NOT NULL                      
 )");
 
-// テーブルが空の場合、テスト用のデータを挿入
-$result = $db->query("SELECT COUNT(*) AS count FROM memos");
-$count = $result->fetchArray(SQLITE3_ASSOC)['count'];
-if ($count == 0) {
-    $db->exec("INSERT INTO memos (title, content, category, date) VALUES
-        ('テストメモ1', 'これはテスト内容1です', '未分類', '2025-11-24'),
-        ('テストメモ2', 'これはテスト内容2です', '未分類', '2025-11-23')
-    ");
-}
-
 // 全てのメモを取得（作成日が新しい順）
 $result = $db->query("SELECT * FROM memos ORDER BY date DESC");
 

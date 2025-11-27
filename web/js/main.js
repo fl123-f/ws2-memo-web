@@ -1,4 +1,3 @@
-// js/main.js
 document.addEventListener('DOMContentLoaded', () => {
     const memoList = document.getElementById('memo-list');
     const saveBtn = document.getElementById('save-memo');
@@ -6,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const memoContent = document.getElementById('memo-content');
     const memoCategory = document.getElementById('memo-category');
 
-    // ---- XSS対策用 ----
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')
@@ -16,32 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#039;');
     }
 
-    // ---- メモを取得して表示 ----
     function loadMemos() {
         fetch('api/get_memos.php')
-            .then(res => res.text())
-            .then(text => {
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.error('JSON parse error:', e);
-                    memoList.innerHTML = '<p>JSON のパースに失敗しました。</p>';
-                    return;
-                }
-                if (!Array.isArray(data) || data.length === 0) {
-                    memoList.innerHTML = '<p>メモはありません。</p>';
-                    return;
-                }
+            .then(res => res.json())
+            .then(data => {
                 displayMemos(data);
             })
             .catch(err => {
                 console.error(err);
-                memoList.innerHTML = '<p>データの取得に失敗しました。</p>';
+                memoList.innerHTML = '<p>メモの取得に失敗しました。</p>';
             });
     }
 
-    // ---- メモ表示＋折叠逻辑 ----
     function displayMemos(memos) {
         memoList.innerHTML = '';
         memos.forEach(memo => {
@@ -49,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
             memoDiv.className = 'memo-item';
             memoDiv.dataset.id = memo.id;
 
-            // header
             const header = document.createElement('div');
             header.className = 'memo-header';
 
@@ -63,155 +46,154 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const editBtn = document.createElement('button');
             editBtn.className = 'edit-btn';
-            editBtn.type = 'button';
             editBtn.textContent = '✏️';
 
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-btn';
-            deleteBtn.type = 'button';
             deleteBtn.textContent = '🗑️';
+
+            header.append(titleEl, dateEl, editBtn, deleteBtn);
+
+            const bodyEl = document.createElement('div');
+            bodyEl.className = 'memo-body';
+            bodyEl.textContent = memo.content || '';
+
+            const categoryEl = document.createElement('div');
+            categoryEl.className = 'memo-category';
+            categoryEl.textContent = '分類: ' + (memo.category || '未分類');
+
+            memoDiv.append(header, bodyEl, categoryEl);
+            memoList.appendChild(memoDiv);
+
+            // 编辑功能
+            editBtn.addEventListener('click', () => makeEditable(memoDiv, memo));
+
+            // 删除功能
             deleteBtn.addEventListener('click', () => {
                 if (confirm('このメモを削除してもよいですか？')) {
                     deleteMemo(memo.id);
                 }
             });
 
-            header.appendChild(titleEl);
-            header.appendChild(dateEl);
-            header.appendChild(editBtn);
-            header.appendChild(deleteBtn);
+            // 展开/收起
+            if (bodyEl.textContent.length > 100) {
+                const shortText = bodyEl.textContent.slice(0, 100) + '…';
+                const toggleBtn = document.createElement('button');
+                toggleBtn.textContent = '展開';
+                let expanded = false;
 
-            // body + category + 折叠
-            const bodyEl = document.createElement('div');
-            bodyEl.className = 'memo-body';
-            const fullText = memo.content || '';
-            const shortText = fullText.length > 50 ? fullText.slice(0, 50) + '…' : fullText;
-            bodyEl.textContent = shortText;
-
-            const categoryEl = document.createElement('div');
-            categoryEl.className = 'memo-category';
-            categoryEl.textContent = '分類: ' + (memo.category || '');
-
-            // 展开/收起按钮
-            let toggleBtn = null;
-            if (fullText.length > 50) {
-                toggleBtn = document.createElement('button');
-                toggleBtn.type = 'button';
-                toggleBtn.textContent = '展开';
+                bodyEl.textContent = shortText;
                 toggleBtn.addEventListener('click', () => {
-                    if (bodyEl.textContent === shortText) {
-                        bodyEl.textContent = fullText;
-                        toggleBtn.textContent = '收起';
-                    } else {
+                    if (expanded) {
                         bodyEl.textContent = shortText;
-                        toggleBtn.textContent = '展开';
+                        toggleBtn.textContent = '展開';
+                        expanded = false;
+                    } else {
+                        bodyEl.textContent = memo.content;
+                        toggleBtn.textContent = '折りたたむ';
+                        expanded = true;
                     }
                 });
+                memoDiv.appendChild(toggleBtn);
             }
-
-            memoDiv.appendChild(header);
-            memoDiv.appendChild(bodyEl);
-            memoDiv.appendChild(categoryEl);
-            if (toggleBtn) memoDiv.appendChild(toggleBtn);
-
-            memoList.appendChild(memoDiv);
-
-            // 编辑按钮
-            editBtn.addEventListener('click', () => makeEditable(memoDiv, memo));
         });
     }
 
-    // ---- 新規メモ保存 ----
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            const title = memoTitle.value.trim();
-            const content = memoContent.value.trim();
-            const category = memoCategory.value.trim();
-            if (!title || !content) return alert('タイトルと内容を入力してください。');
+    // 新規メモ保存
+    saveBtn.addEventListener('click', () => {
+        const title = memoTitle.value.trim();
+        const content = memoContent.value.trim();
+        const category = memoCategory.value;
 
-            fetch('api/save_memo.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content, category })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        memoTitle.value = '';
-                        memoContent.value = '';
-                        memoCategory.value = '';
-                        loadMemos(); // 保存後立即更新列表
-                    } else alert('保存に失敗しました：' + (data.message || ''));
-                })
-                .catch(err => console.error(err));
-        });
-    }
+        if (!title || !content) {
+            alert('タイトルと内容を入力してください。');
+            return;
+        }
 
-    // ---- メモ更新 ----
-    function updateMemo(id, title, content, category, callback) {
-        fetch('api/update_memo.php', {
+        fetch('api/save_memo.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, title, content, category })
+            body: JSON.stringify({ title, content, category })
         })
             .then(res => res.json())
             .then(data => {
-                if (data.success) callback && callback();
-                else alert('更新に失敗しました：' + (data.message || ''));
+                if (data.success) {
+                    memoTitle.value = '';
+                    memoContent.value = '';
+                    memoCategory.value = '';
+                    loadMemos();
+                } else {
+                    alert('保存に失敗しました');
+                }
             })
             .catch(err => console.error(err));
-    }
+    });
 
-    // ---- メモ削除 ----
-    function deleteMemo(id) {
-        fetch(`api/delete_memo.php?id=${encodeURIComponent(id)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) loadMemos();
-                else alert('削除に失敗しました：' + (data.message || ''));
-            })
-            .catch(err => console.error(err));
-    }
-
-    // ---- 编辑模式 ----
     function makeEditable(memoDiv, memoData) {
         if (memoDiv.classList.contains('editing')) return;
         memoDiv.classList.add('editing');
 
-        const editBtn = memoDiv.querySelector('.edit-btn');
-        const titleEl = memoDiv.querySelector('.memo-title');
-        const bodyEl = memoDiv.querySelector('.memo-body');
-        const categoryEl = memoDiv.querySelector('.memo-category');
-
-        // 输入框
         const titleInput = document.createElement('input');
-        titleInput.value = memoData.title || '';
+        titleInput.value = memoData.title;
+
         const bodyInput = document.createElement('textarea');
-        bodyInput.value = memoData.content || '';
-        const categoryInput = document.createElement('input');
-        categoryInput.value = memoData.category || '';
+        bodyInput.value = memoData.content;
 
-        titleEl.replaceWith(titleInput);
-        bodyEl.replaceWith(bodyInput);
-        categoryEl.replaceWith(categoryInput);
+        const categorySelect = document.createElement('select');
+        const categories = ["未分類","授業ノート","課題・宿題","試験対策","課外学習","プログラミング","Web開発","データ分析","技術メモ","参考資料","まとめ","書籍ノート","講義資料","リファレンス"];
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            if(cat === memoData.category) option.selected = true;
+            categorySelect.appendChild(option);
+        });
 
-        // 保存按钮
+        const editBtn = memoDiv.querySelector('.edit-btn');
         editBtn.textContent = '💾';
-        editBtn.onclick = () => {
-            const newTitle = titleInput.value.trim();
-            const newBody = bodyInput.value.trim();
-            const newCategory = categoryInput.value.trim();
-            if (!newTitle || !newBody) return alert('タイトルと内容を入力してください。');
 
-            updateMemo(memoData.id, newTitle, newBody, newCategory, () => {
-                memoDiv.classList.remove('editing');
-                // 更新显示
-                displayMemos([{ id: memoData.id, title: newTitle, content: newBody, category: newCategory, date: memoData.date }]);
-                loadMemos(); // 立即更新列表，保证折叠逻辑生效
-            });
+        const onSave = () => {
+            const newTitle = titleInput.value.trim();
+            const newContent = bodyInput.value.trim();
+            const newCategory = categorySelect.value;
+
+            if (!newTitle || !newContent) {
+                alert('タイトルと内容を入力してください。');
+                return;
+            }
+
+            fetch('api/update_memo.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: memoData.id,
+                    title: newTitle,
+                    content: newContent,
+                    category: newCategory
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) loadMemos();
+                else alert('更新に失敗しました');
+            })
+            .catch(err => console.error(err));
         };
+
+        memoDiv.innerHTML = '';
+        memoDiv.append(titleInput, bodyInput, categorySelect, editBtn);
+        editBtn.onclick = onSave;
     }
 
-    // ---- 初回加载 ----
+    function deleteMemo(id) {
+        fetch(`api/delete_memo.php?id=${encodeURIComponent(id)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) loadMemos();
+                else alert('削除に失敗しました');
+            })
+            .catch(err => console.error(err));
+    }
+
     loadMemos();
 });
