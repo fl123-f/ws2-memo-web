@@ -4,11 +4,10 @@ export async function getMemos() {
         const res = await fetch('api/get_memos.php');
         const text = await res.text();
         const data = JSON.parse(text);
-        if (!Array.isArray(data)) throw new Error('Invalid data');
-        return data;
+        return data || { memos: [] };
     } catch (err) {
         console.error('getMemos error:', err);
-        return [];
+        return { memos: [] };
     }
 }
 

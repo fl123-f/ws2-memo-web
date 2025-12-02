@@ -1,21 +1,31 @@
 // main.js
-import { setupHandlers } from './memoHandlers.js';
+import * as memoService from './memoService.js';
+import * as memoUI from './memoUI.js';
+import { attachHandlers } from './memoHandlers.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const elements = {
-        memoList: document.getElementById('memo-list'),
-        memoTitle: document.getElementById('memo-title'),
-        memoContent: document.getElementById('memo-content'),
-        memoCategory: document.getElementById('memo-category'),
-        categoryList: document.getElementById('category-list'),
-        memoSearch: document.getElementById('memo-search'),
-        memoCountEl: document.getElementById('memo-count')
-    };
+    const saveBtn = document.getElementById('save-memo');
+    const titleInput = document.getElementById('memo-title');
+    const contentInput = document.getElementById('memo-content');
+    const categorySelect = document.getElementById('memo-category');
+    const memoList = document.getElementById('memo-list');
 
-    const state = {
-        currentFilterCategory: '',
-        currentSearchKeyword: ''
-    };
+    // 创建分页容器
+    let paginationContainer = document.getElementById('pagination-container');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'pagination-container';
+        memoList.parentNode.appendChild(paginationContainer);
+    }
 
-    setupHandlers(elements, state);
+    attachHandlers({
+        saveBtn,
+        titleInput,
+        contentInput,
+        categorySelect,
+        memoList,
+        paginationContainer,
+        memoService,
+        memoUI
+    });
 });

@@ -1,126 +1,110 @@
-// memoHandlers.js
-import * as memoService from './memoService.js';
-import { renderMemos } from './memoUI.js';
+export function attachHandlers({ saveBtn, titleInput, contentInput, categorySelect, memoList, paginationContainer, memoService, memoUI }) {
+    let currentPage = 1;
+    const pageSize = 10;
+    let currentCategory = '';
+    let currentKeyword = '';
 
-export function setupHandlers(elements, state) {
-    const { memoList, memoTitle, memoContent, memoCategory, categoryList, memoSearch, memoCountEl } = elements;
+    const categoryList = document.getElementById('category-list');
+    const searchInput = document.getElementById('memo-search');
+    const memoCount = document.getElementById('memo-count');
 
-    // 保存新笔记
-    document.getElementById('save-memo').addEventListener('click', async () => {
-        const title = memoTitle.value.trim();
-        const content = memoContent.value.trim();
-        const category = memoCategory.value.trim();
-        if (!title || !content) { alert('タイトルと内容を入力してください'); return; }
-        const result = await memoService.saveMemo(title, content, category);
-        if (result.success) {
-            memoTitle.value = '';
-            memoContent.value = '';
-            memoCategory.value = '';
-            loadAndRenderMemos();
-        } else {
-            alert('保存に失敗しました：' + (result.message || ''));
-        }
-    });
+    async function loadMemos() {
+        const res = await memoService.getMemos(currentPage, pageSize, currentCategory, currentKeyword);
+        const pageMemos = res.memos;
+        const total = res.total;
+        const pages = Math.ceil(total / pageSize);
 
-    // 分类点击
-    categoryList.addEventListener('click', (e) => {
-        const li = e.target.closest('li');
-        if (!li) return;
-        state.currentFilterCategory = li.dataset.category || '';
-        Array.from(categoryList.querySelectorAll('li')).forEach(item => {
-            item.style.fontWeight = (item === li) ? 'bold' : 'normal';
-        });
-        loadAndRenderMemos();
-    });
+        memoUI.renderMemos(pageMemos, memoList, { onEdit, onDelete });
+        memoCount.textContent = `メモ件数: ${total}`;
 
-    // 搜索框
-    if (memoSearch) {
-        memoSearch.addEventListener('input', () => {
-            state.currentSearchKeyword = memoSearch.value.trim().toLowerCase();
-            loadAndRenderMemos();
-        });
+        renderPagination(pages);
+        highlightCategory();
     }
 
+    function renderPagination(pages) {
+        paginationContainer.innerHTML = '';
+        if (pages <= 1) return;
+        for (let i = 1; i <= pages; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.disabled = i === currentPage;
+            btn.addEventListener('click', () => {
+                currentPage = i;
+                loadMemos();
+            });
+            paginationContainer.appendChild(btn);
+        }
+    }
+
+    // 新建/保存
+    saveBtn.addEventListener('click', async () => {
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
+        const category = categorySelect.value;
+
+        if (!title && !content) return;
+
+        await memoService.saveMemo(title, content, category);
+        titleInput.value = '';
+        contentInput.value = '';
+        categorySelect.value = '';
+        currentPage = 1;
+        loadMemos();
+    });
+
     // 编辑
-    async function onEdit(memoDiv, memoData) {
-        if (memoDiv.classList.contains('editing')) return;
-        memoDiv.classList.add('editing');
+    async function onEdit(memoDiv, memo) {
+        titleInput.value = memo.title;
+        contentInput.value = memo.content;
+        categorySelect.value = memo.category;
 
-        const header = memoDiv.querySelector('.memo-header');
-        const bodyContainer = memoDiv.querySelector('.memo-body-container');
-        const categoryEl = memoDiv.querySelector('.memo-category');
-        const editBtn = header.querySelector('.edit-btn');
-        const titleEl = header.querySelector('.memo-title');
-
-        const titleInput = document.createElement('input');
-        titleInput.type = 'text';
-        titleInput.value = memoData.title || '';
-        titleInput.style.width = '60%';
-
-        const categorySelect = document.createElement('select');
-        const categories = ['', '授業ノート', '課題・宿題', '試験対策', '課外学習', 'プログラミング', 'Web開発', 'データ分析', '技術メモ', '書籍ノート', '講義資料', 'リファレンス'];
-        categories.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat === '' ? 'カテゴリなし' : cat;
-            if (cat === (memoData.category || '')) opt.selected = true;
-            categorySelect.appendChild(opt);
-        });
-
-        const bodyTextarea = document.createElement('textarea');
-        bodyTextarea.value = memoData.content || '';
-        bodyTextarea.style.width = '100%';
-        bodyTextarea.style.height = '120px';
-        bodyTextarea.style.boxSizing = 'border-box';
-
-        header.replaceChild(titleInput, titleEl);
-        categoryEl.textContent = '';
-        categoryEl.appendChild(categorySelect);
-        bodyContainer.innerHTML = '';
-        bodyContainer.appendChild(bodyTextarea);
-
-        editBtn.textContent = '保存';
-        editBtn.onclick = async () => {
-            const newTitle = titleInput.value.trim();
-            const newContent = bodyTextarea.value.trim();
-            const newCategory = categorySelect.value.trim();
-            if (!newTitle || !newContent) { alert('タイトルと内容を入力してください'); return; }
-
-            const result = await memoService.updateMemo(memoDiv.dataset.id, newTitle, newContent, newCategory);
-            if (result.success) {
-                memoDiv.classList.remove('editing');
-                loadAndRenderMemos();
-            } else {
-                alert('更新に失敗しました：' + (result.message || ''));
-            }
+        saveBtn.textContent = '更新する';
+        saveBtn.onclick = async () => {
+            await memoService.updateMemo(memo.id, titleInput.value, contentInput.value, categorySelect.value);
+            titleInput.value = '';
+            contentInput.value = '';
+            categorySelect.value = '';
+            saveBtn.textContent = '保存する';
+            saveBtn.onclick = null;
+            currentPage = 1;
+            loadMemos();
         };
     }
 
     // 删除
     async function onDelete(id) {
-        if (!confirm('このメモを削除してもよいですか？')) return;
-        const result = await memoService.deleteMemo(id);
-        if (result.success) loadAndRenderMemos();
-        else alert('削除に失敗しました：' + (result.message || ''));
+        if (!confirm('本当に削除しますか？')) return;
+        await memoService.deleteMemo(id);
+        loadMemos();
     }
 
-    // 全部加载并渲染
-    async function loadAndRenderMemos() {
-        const allMemos = await memoService.getMemos();
-        let filtered = allMemos;
-        if (state.currentFilterCategory) {
-            filtered = filtered.filter(m => (m.category || '') === state.currentFilterCategory);
-        }
-        if (state.currentSearchKeyword) {
-            filtered = filtered.filter(m =>
-                (m.title || '').toLowerCase().includes(state.currentSearchKeyword) ||
-                (m.content || '').toLowerCase().includes(state.currentSearchKeyword)
-            );
-        }
-        if (memoCountEl) memoCountEl.textContent = `メモ件数: ${filtered.length}`;
-        renderMemos(filtered, memoList, { onEdit, onDelete });
+    // 分类点击
+    categoryList.addEventListener('click', (e) => {
+        const li = e.target.closest('li');
+        if (!li) return;
+        currentCategory = li.dataset.category;
+        currentPage = 1;
+        loadMemos();
+    });
+
+    // 搜索
+    searchInput.addEventListener('input', (e) => {
+        currentKeyword = e.target.value.trim();
+        currentPage = 1;
+        loadMemos();
+    });
+
+    // 高亮当前分类
+    function highlightCategory() {
+        categoryList.querySelectorAll('li').forEach(li => {
+            if (li.dataset.category === currentCategory) {
+                li.style.fontWeight = 'bold';
+            } else {
+                li.style.fontWeight = '';
+            }
+        });
     }
 
-    // 初回加载
-    loadAndRenderMemos();
+    // 初次加载
+    loadMemos();
 }

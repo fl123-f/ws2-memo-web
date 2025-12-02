@@ -1,4 +1,3 @@
-// memoUI.js
 export function escapeHtml(str) {
     return String(str)
         .replace(/&/g, '&amp;')
@@ -8,7 +7,6 @@ export function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-// 渲染笔记列表
 export function renderMemos(memos, container, handlers) {
     container.innerHTML = '';
     if (memos.length === 0) {
