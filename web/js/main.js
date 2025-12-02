@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('memo-category');
     const memoList = document.getElementById('memo-list');
 
-    // 创建分页容器
+    // ページネーション用のコンテナを作成
     let paginationContainer = document.getElementById('pagination-container');
     if (!paginationContainer) {
         paginationContainer = document.createElement('div');
@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         memoList.parentNode.appendChild(paginationContainer);
     }
 
+    // イベントハンドラを設定
     attachHandlers({
         saveBtn,
         titleInput,

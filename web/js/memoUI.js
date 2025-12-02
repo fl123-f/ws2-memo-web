@@ -1,3 +1,4 @@
+// memoUI.js
 export function escapeHtml(str) {
     return String(str)
         .replace(/&/g, '&amp;')
@@ -7,6 +8,7 @@ export function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// メモ一覧をレンダリング
 export function renderMemos(memos, container, handlers) {
     container.innerHTML = '';
     if (memos.length === 0) {
@@ -31,13 +33,11 @@ export function renderMemos(memos, container, handlers) {
         dateEl.textContent = memo.date || '';
 
         const editBtn = document.createElement('button');
-        editBtn.className = 'edit-btn';
         editBtn.type = 'button';
         editBtn.textContent = '✏️';
         editBtn.addEventListener('click', () => handlers.onEdit(memoDiv, memo));
 
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-btn';
         deleteBtn.type = 'button';
         deleteBtn.textContent = '🗑️';
         deleteBtn.addEventListener('click', () => handlers.onDelete(memo.id));
@@ -60,7 +60,6 @@ export function renderMemos(memos, container, handlers) {
         bodyFull.style.display = 'none';
 
         const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'toggle-btn';
         toggleBtn.type = 'button';
         toggleBtn.textContent = '展開';
         toggleBtn.addEventListener('click', () => {
