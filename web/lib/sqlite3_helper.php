@@ -68,5 +68,18 @@ public function updateMemo($id, $title, $content, $category = '') {
     return $stmt->execute() ? true : false;
 }
 
+    // 根据 ID 获取单条备忘录
+    public function getMemoById($id) {
+        $id = (int)$id;
+        if ($id <= 0) return null;
+        $stmt = $this->db->prepare("SELECT * FROM memos WHERE id = :id");
+        if (!$stmt) return null;
+        $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+        $res = $stmt->execute();
+        if (!$res) return null;
+        $row = $res->fetchArray(SQLITE3_ASSOC);
+        return $row ? $row : null;
+    }
+
 }
 

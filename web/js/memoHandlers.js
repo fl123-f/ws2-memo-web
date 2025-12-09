@@ -4,6 +4,8 @@ export function attachHandlers({ saveBtn, titleInput, contentInput, categorySele
     let pageSize = 10;
     let currentCategory = '';
     let currentKeyword = '';
+    let isEditMode = false; // 添加编辑模式标志
+    let currentEditId = null; // 当前编辑的笔记ID
 
     const categoryList = document.getElementById('category-list');
     const searchInput = document.getElementById('memo-search');
@@ -54,23 +56,39 @@ export function attachHandlers({ saveBtn, titleInput, contentInput, categorySele
         }
     }
 
-   // 新規作成/保存
-    saveBtn.addEventListener('click', async () => {
+    // 保存处理函数
+    async function handleSave() {
         const title = titleInput.value.trim();
         const content = contentInput.value.trim();
         const category = categorySelect.value;
 
         if (!title && !content) return;
 
-        await memoService.saveMemo(title, content, category);
+        if (isEditMode && currentEditId) {
+            // 编辑模式：更新现有笔记
+            await memoService.updateMemo(currentEditId, title, content, category);
+        } else {
+            // 新建模式：保存新笔记
+            await memoService.saveMemo(title, content, category);
+        }
+        
+        // 清空表单
         titleInput.value = '';
         contentInput.value = '';
         categorySelect.value = '';
+        
+        // 重置为新建模式
+        isEditMode = false;
+        currentEditId = null;
         saveBtn.textContent = '保存する';
-        saveBtn.onclick = null;
+        
+        // 重新加载笔记列表
         currentPage = 1;
         loadMemos();
-    });
+    }
+
+   // 新規作成/保存 - 只绑定一次事件
+    saveBtn.addEventListener('click', handleSave);
 
     // 編集
     async function onEdit(memoDiv, memo) {
@@ -78,16 +96,10 @@ export function attachHandlers({ saveBtn, titleInput, contentInput, categorySele
         contentInput.value = memo.content;
         categorySelect.value = memo.category;
 
+        // 切换到编辑模式
+        isEditMode = true;
+        currentEditId = memo.id;
         saveBtn.textContent = '更新する';
-        saveBtn.onclick = async () => {
-            await memoService.updateMemo(memo.id, titleInput.value, contentInput.value, categorySelect.value);
-            titleInput.value = '';
-            contentInput.value = '';
-            categorySelect.value = '';
-            saveBtn.textContent = '保存する';
-            saveBtn.onclick = null;
-            loadMemos();
-        };
     }
 
     // 削除
