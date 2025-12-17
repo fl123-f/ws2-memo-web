@@ -1,0 +1,309 @@
+/* ================================
+   基本レイアウト（全体設定）
+================================ */
+* {
+    box-sizing: border-box;
+    /* ボックスモデルの統一 */
+}
+
+/* コンテナ（中央揃え） */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+/* タイトル */
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #3498db;
+    font-size: 2.2rem;
+}
+
+/* ================================
+   ページレイアウト（サイドバー + メイン）
+================================ */
+#layout {
+    display: flex;
+    /* 横並び配置 */
+    gap: 30px;
+    /* 要素の間隔 */
+    margin-top: 20px;
+}
+
+/* サイドバー */
+#layout>aside {
+    flex: 1;
+    /* 幅：小 */
+    min-width: 0;
+    /* コンテンツで横に伸びないようにする */
+    background: #f1f8ff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #d1e7ff;
+}
+
+aside h3 {
+    color: #2980b9;
+    margin: 0 0 15px;
+    font-size: 1.3rem;
+}
+
+/* メインコンテンツ */
+#layout>main {
+    flex: 3;
+    /* 幅：大 */
+    min-width: 0;
+    /* 横方向の押し広げ防止 */
+    overflow: auto;
+    /* 内容が大きい場合スクロール */
+}
+
+/* ================================
+   カテゴリリスト
+================================ */
+#category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#category-list li {
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#category-list li:hover {
+    background: #e3f2fd;
+    border-color: #3498db;
+    transform: translateX(5px);
+}
+
+/* ================================
+   メモ検索
+================================ */
+#memo-search {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+/* メモ数 */
+#memo-count {
+    display: block;
+    text-align: right;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+/* ================================
+   セクションブロック
+================================ */
+section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+section h3 {
+    color: #2c3e50;
+    margin: 0 0 20px;
+    font-size: 1.4rem;
+}
+
+/* ================================
+   入力フィールド
+================================ */
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* ================================
+   ボタン
+================================ */
+button {
+    background: #3498db;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+/* ================================
+   メモ一覧
+================================ */
+#memo-list {
+    min-height: 200px;
+}
+
+.memo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.memo-item {
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #eef2f8;
+}
+
+.memo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.memo-title {
+    font-weight: 600;
+}
+
+.memo-date {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.memo-body-short {
+    color: #111827;
+}
+
+.memo-category {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 8px;
+}
+
+/* ================================
+   長い文字列の折り返し対策
+================================ */
+.break-word,
+pre,
+code {
+    word-break: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* 画像や表のはみ出し防止 */
+img,
+iframe,
+table {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ================================
+   検索ページ用（必要部分のみ残す）
+================================ */
+.page-header {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.page-header p {
+    color: #555;
+    margin: 6px 0;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #2b6cb0;
+}
+
+.search-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.search-input {
+    flex: 1;
+    max-width: 720px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+.btn-link {
+    background: transparent;
+    color: #2563eb;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: none;
+}
+
+/* ================================
+   スマホ対応
+================================ */
+@media (max-width: 768px) {
+    #layout {
+        flex-direction: column;
+        /* 縦並びに変更 */
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+}
+
+main, section, #memo-list, .memo-item {
+    white-space: normal;     /* 强制允许换行 */
+    word-break: break-word;  /* 长单词也会换行 */
+    overflow-wrap: anywhere; /* 避免横向溢出 */
+}
