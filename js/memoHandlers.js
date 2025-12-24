@@ -12,6 +12,8 @@ export function attachHandlers({ saveBtn, titleInput, contentInput, categorySele
     const categoryList = document.getElementById('category-list');
     const searchInput = document.getElementById('memo-search');
     const memoCount = document.getElementById('memo-count');
+    const exportJsonBtn = document.getElementById('export-json');
+    const exportCsvBtn = document.getElementById('export-csv');
 
     // 選択されたカテゴリをハイライト
     function highlightCategory() {
@@ -163,6 +165,60 @@ export function attachHandlers({ saveBtn, titleInput, contentInput, categorySele
         currentPage = 1;
         loadMemos();
     });
+
+    // JSONエクスポート
+    if (exportJsonBtn) {
+        exportJsonBtn.addEventListener('click', async () => {
+            try {
+                const data = await memoService.exportJSON();
+                if (data && data.length > 0) {
+                    // JSONデータをBlobとしてダウンロード
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `memos_export_${new Date().toISOString().slice(0, 10)}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    await modalManager.alert('エクスポート成功', 'JSONファイルが正常にダウンロードされました。');
+                } else {
+                    await modalManager.alert('エクスポート失敗', 'エクスポートするデータがありません。');
+                }
+            } catch (error) {
+                console.error('JSONエクスポートエラー:', error);
+                await modalManager.alert('エクスポート失敗', 'JSONファイルのエクスポート中にエラーが発生しました。');
+            }
+        });
+    }
+
+    // CSVエクスポート
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', async () => {
+            try {
+                const csvData = await memoService.exportCSV();
+                if (csvData && csvData.trim().length > 0) {
+                    // CSVデータをBlobとしてダウンロード
+                    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `memos_export_${new Date().toISOString().slice(0, 10)}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    await modalManager.alert('エクスポート成功', 'CSVファイルが正常にダウンロードされました。');
+                } else {
+                    await modalManager.alert('エクスポート失敗', 'エクスポートするデータがありません。');
+                }
+            } catch (error) {
+                console.error('CSVエクスポートエラー:', error);
+                await modalManager.alert('エクスポート失敗', 'CSVファイルのエクスポート中にエラーが発生しました。');
+            }
+        });
+    }
 
     // 初期読み込み
     loadMemos();

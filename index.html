@@ -37,8 +37,12 @@
 
             <!-- 右：検索 + 新規メモ作成 + リスト -->
             <main>
-                <div>
+                <div class="search-export-container">
                     <input type="text" id="memo-search" placeholder="🔍 メモを検索…">
+                    <div class="export-buttons">
+                        <button id="export-json" class="export-btn">📥 JSONエクスポート</button>
+                        <button id="export-csv" class="export-btn">📥 CSVエクスポート</button>
+                    </div>
                     <span id="memo-count">📊 メモ件数: 0</span>
                 </div>
 

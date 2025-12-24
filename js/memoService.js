@@ -48,3 +48,28 @@ export async function deleteMemo(id) {
         return { success: false };
     }
 }
+
+export async function exportJSON() {
+    try {
+        const res = await fetch('api/import_export.php?action=export&format=json');
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error('exportJSON error:', err);
+        return [];
+    }
+}
+
+export async function exportCSV() {
+    try {
+        const res = await fetch('api/import_export.php?action=export&format=csv');
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const csvText = await res.text();
+        return csvText;
+    } catch (err) {
+        console.error('exportCSV error:', err);
+        return '';
+    }
+}
