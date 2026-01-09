@@ -329,6 +329,14 @@ button:hover {
 }
 
 
+/*正文换行显示*/
+.memo-body {
+    white-space: pre-wrap; /* 保留换行符 */
+    word-break: break-word; /* 长单词换行 */
+    margin-top: 8px;
+    color: #333;
+}
+
 
 
 /* ========================
