@@ -15,7 +15,9 @@ class SQLite3Helper {
             title TEXT NOT NULL,
             content TEXT NOT NULL,
             category TEXT,
-            date TEXT NOT NULL
+            date TEXT NOT NULL,
+            is_pinned INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )");
     }
 
@@ -37,7 +39,7 @@ class SQLite3Helper {
         $stmt->bindValue(':title', $title, SQLITE3_TEXT);
         $stmt->bindValue(':content', $content, SQLITE3_TEXT);
         $stmt->bindValue(':category', $category, SQLITE3_TEXT);
-        $stmt->bindValue(':date', date('Y-m-d'), SQLITE3_TEXT);
+        $stmt->bindValue(':date', date('Y-m-d H:i:s'), SQLITE3_TEXT);
 
         $result = $stmt->execute();
         if ($result) {
@@ -47,9 +49,9 @@ class SQLite3Helper {
         }
     }
 
-    // 获取所有备忘录（按日期降序）
+    // 获取所有备忘录（按置顶和创建时间降序）
     public function getAllMemos() {
-        $result = $this->db->query("SELECT * FROM memos ORDER BY date DESC");
+        $result = $this->db->query("SELECT * FROM memos ORDER BY is_pinned DESC, created_at DESC");
         $memos = [];
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
             $memos[] = $row;
@@ -82,4 +84,3 @@ public function updateMemo($id, $title, $content, $category = '') {
     }
 
 }
-

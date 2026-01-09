@@ -1,100 +1,96 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学習メモ一覧</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学習メモ一覧</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
+  <div class="container">
 
-        <div class="top-nav">
-            <h1>学習メモ＆資料整理</h1>
-            
+    <!-- 顶部导航 -->
+    <header class="top-nav">
+      <h1>学習メモ＆資料整理</h1>
+      <div class="theme-toggle-container">
+        <select id="theme-select" class="theme-select" title="テーマ選択">
+          <option value="light">☀️ ライトモード</option>
+          <option value="dark">🌙 ダークモード</option>
+          <option value="auto">🔄 システムに合わせる</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- 主体布局 -->
+    <div id="layout">
+
+      <!-- 左侧分类栏 -->
+      <aside class="sidebar">
+        <h3>📂 カテゴリ</h3>
+        <ul id="category-list">
+          <li data-category="" class="category-item active">すべてのメモ</li>
+          <li data-category="授業ノート" class="category-item">📝 授業ノート</li>
+          <li data-category="課題・宿題" class="category-item">📋 課題・宿題</li>
+          <li data-category="試験対策" class="category-item">📚 試験対策</li>
+          <li data-category="プログラミング" class="category-item">💻 プログラミング</li>
+        </ul>
+        <!-- 自定义分类按钮 -->
+        <button id="add-category" class="btn-add-category">➕ 新しいカテゴリ追加</button>
+      </aside>
+
+      <!-- 右侧主内容 -->
+      <main class="main-content">
+
+        <!-- 搜索 + 导出 -->
+        <div class="search-export-container">
+          <input type="text" id="memo-search" placeholder="🔍 メモを検索…">
+          <div class="export-buttons">
+            <button id="export-json" class="export-btn">📥 JSON</button>
+            <button id="export-csv" class="export-btn">📥 CSV</button>
+          </div>
+          <span id="memo-count">📊 メモ件数: 0</span>
         </div>
-        
-        
-        <div id="layout">
-            <!-- 左：カテゴリリスト -->
-            <aside>
-                <h3>📂 カテゴリ</h3>
-                <ul id="category-list">
-                    <li data-category="">すべてのメモ</li>
-                    <li data-category="授業ノート">📝 授業ノート</li>
-                    <li data-category="課題・宿題">📋 課題・宿題</li>
-                    <li data-category="試験対策">📚 試験対策</li>
-                    <li data-category="課外学習">🌟 課外学習</li>
-                    <li data-category="プログラミング">💻 プログラミング</li>
-                    <li data-category="Web開発">🌐 Web開発</li>
-                    <li data-category="データ分析">📊 データ分析</li>
-                    <li data-category="技術メモ">🔧 技術メモ</li>
-                    <li data-category="書籍ノート">📖 書籍ノート</li>
-                    <li data-category="講義資料">📄 講義資料</li>
-                    <li data-category="リファレンス">🔍 リファレンス</li>
-                </ul>
-            </aside>
 
-            <!-- 右：検索 + 新規メモ作成 + リスト -->
-            <main>
-                <div class="search-export-container">
-                    <input type="text" id="memo-search" placeholder="🔍 メモを検索…">
-                    <div class="export-buttons">
-                        <button id="export-json" class="export-btn">📥 JSONエクスポート</button>
-                        <button id="export-csv" class="export-btn">📥 CSVエクスポート</button>
-                    </div>
-                    <span id="memo-count">📊 メモ件数: 0</span>
-                </div>
+        <!-- 新建 Memo -->
+        <section id="new-memo" class="memo-form">
+          <h3>📝 新しいメモを作成</h3>
+          <input type="text" id="memo-title" placeholder="メモのタイトル">
+          <select id="memo-category">
+            <option value="">📂 カテゴリを選択（任意）</option>
+          </select>
+          <textarea id="memo-content" placeholder="メモの内容を入力" rows="6"></textarea>
+          <div class="form-actions">
+            <button id="save-memo" class="save-btn">💾 保存する</button>
+            <button id="cancel-memo" class="cancel-btn">✖ キャンセル</button>
+          </div>
+        </section>
 
-                <section id="new-memo">
-                    <h3>📝 新しいメモを作成</h3>
-                    <div><input type="text" id="memo-title" placeholder="メモのタイトルを入力"></div>
-                    <div>
-                        <select id="memo-category">
-                            <option value="">📂 カテゴリを選択（任意）</option>
-                            <option value="授業ノート">📝 授業ノート</option>
-                            <option value="課題・宿題">📋 課題・宿題</option>
-                            <option value="試験対策">📚 試験対策</option>
-                            <option value="課外学習">🌟 課外学習</option>
-                            <option value="プログラミング">💻 プログラミング</option>
-                            <option value="Web開発">🌐 Web開発</option>
-                            <option value="データ分析">📊 データ分析</option>
-                            <option value="技術メモ">🔧 技術メモ</option>
-                            <option value="書籍ノート">📖 書籍ノート</li>
-                            <option value="講義資料">📄 講義資料</option>
-                            <option value="リファレンス">🔍 リファレンス</option>
-                        </select>
-                    </div>
-                    <div><textarea id="memo-content" placeholder="メモの内容を入力" rows="6"></textarea></div>
-                    <button id="save-memo">💾 保存する</button>
-                </section>
+        <!-- Memo 列表 -->
+        <section class="memo-list-section">
+          <h3>📋 メモ一覧</h3>
+          <div id="memo-list" class="memo-list">読み込み中…</div>
+          <div id="pagination-container"></div>
+        </section>
 
-                <section>
-                    <h3>📋 メモ一覧</h3>
-                    <div id="memo-list">読み込み中…</div>
-                    <div id="pagination-container"></div>
-                </section>
-            </main>
-        </div>
+      </main>
     </div>
+  </div>
 
-    <!-- モーダルコンテナ -->
-    <div id="modal-overlay" class="modal-overlay" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3 id="modal-title">モーダルタイトル</h3>
-                <button id="modal-close" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body" id="modal-body">
-                モーダル内容
-            </div>
-            <div class="modal-footer" id="modal-footer">
-                <button id="modal-cancel" class="modal-btn modal-btn-secondary">キャンセル</button>
-                <button id="modal-confirm" class="modal-btn modal-btn-primary">確認</button>
-            </div>
-        </div>
+  <!-- 模态框 -->
+  <div id="modal-overlay" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="modal-title">モーダルタイトル</h3>
+        <button id="modal-close" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">モーダル内容</div>
+      <div class="modal-footer" id="modal-footer">
+        <button id="modal-cancel" class="modal-btn modal-btn-secondary">キャンセル</button>
+        <button id="modal-confirm" class="modal-btn modal-btn-primary">確認</button>
+      </div>
     </div>
+  </div>
 
-    <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -1,4 +1,6 @@
 // モーダル管理モジュール
+import { escapeHtml } from './utils.js';
+
 export class ModalManager {
     constructor() {
         this.overlay = document.getElementById('modal-overlay');
@@ -140,15 +142,15 @@ export class ModalManager {
             <div class="memo-detail">
                 <div class="detail-item">
                     <strong>タイトル:</strong>
-                    <p>${this.escapeHtml(memo.title || '')}</p>
+                    <p>${escapeHtml(memo.title || '')}</p>
                 </div>
                 <div class="detail-item">
                     <strong>カテゴリ:</strong>
-                    <p>${this.escapeHtml(memo.category || '未分類')}</p>
+                    <p>${escapeHtml(memo.category || '未分類')}</p>
                 </div>
                 <div class="detail-item">
                     <strong>作成日時:</strong>
-                    <p>${this.escapeHtml(memo.date || '')}</p>
+                    <p>${escapeHtml(memo.date || '')}</p>
                 </div>
                 <div class="detail-item">
                     <strong>内容:</strong>
@@ -157,23 +159,16 @@ export class ModalManager {
             </div>
         `;
         
-        return this.custom(`メモ詳細: ${this.escapeHtml(memo.title || '')}`, content, {
+        return this.custom(`メモ詳細: ${escapeHtml(memo.title || '')}`, content, {
             cancelText: '閉じる',
             confirmText: null
         });
     }
     
-    // HTMLエスケープ
-    escapeHtml(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-    
     // メモ内容フォーマット
     formatMemoContent(content) {
         // 改行を保持
-        const escaped = this.escapeHtml(content);
+        const escaped = escapeHtml(content);
         return escaped.replace(/\n/g, '<br>');
     }
 }

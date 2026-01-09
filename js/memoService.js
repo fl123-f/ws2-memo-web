@@ -39,6 +39,20 @@ export async function updateMemo(id, title, content, category) {
     }
 }
 
+export async function pinMemo(id, is_pinned) {
+    try {
+        const res = await fetch('api/update_memo.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, is_pinned })
+        });
+        return JSON.parse(await res.text());
+    } catch (err) {
+        console.error('pinMemo error:', err);
+        return { success: false };
+    }
+}
+
 export async function deleteMemo(id) {
     try {
         const res = await fetch(`api/delete_memo.php?id=${encodeURIComponent(id)}`);
@@ -71,5 +85,17 @@ export async function exportCSV() {
     } catch (err) {
         console.error('exportCSV error:', err);
         return '';
+    }
+}
+
+// 搜索备忘录
+export async function searchMemos(keyword) {
+    try {
+        const res = await fetch(`api/search_memos.php?keyword=${encodeURIComponent(keyword)}`);
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error('searchMemos error:', err);
+        return { success: false, memos: [], keyword, count: 0 };
     }
 }

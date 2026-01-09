@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../lib/sqlite3_helper.php';
 
-$db = new SQLite3Helper(__DIR__ . '/../../data/memo.db');
+$db = new SQLite3Helper(__DIR__ . '/../data/memo.db');
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 if ($id === null || $id <= 0) {

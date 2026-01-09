@@ -1,13 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>メモ詳細</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メモ詳細 - 学習メモ＆資料整理</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>メモ詳細</h1>
-  <div id="memo-detail"></div>
-  <script src="js/main.js"></script>
+  <div class="container">
+    <div class="top-nav">
+      <h1>メモ詳細</h1>
+      <div class="theme-toggle-container">
+        <select id="theme-select" class="theme-select" title="テーマ選択">
+          <option value="light">☀️ ライトモード</option>
+          <option value="dark">🌙 ダークモード</option>
+          <option value="auto">🔄 システムに合わせる</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="memo-detail"></div>
+    
+    <div class="back-link-container">
+      <a href="index.html" class="btn btn-link">← メモ一覧に戻る</a>
+    </div>
+  </div>
+  
+  <script type="module" src="js/memo_detail.js"></script>
 </body>
 </html>

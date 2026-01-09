@@ -10,8 +10,19 @@
 <body class="search-page">
     <div class="container search-container">
         <div class="page-header">
-            <h1>🔍 笔记搜索</h1>
-            <p>搜索您的学习笔记和资料</p>
+            <div class="header-top">
+                <div>
+                    <h1>🔍 笔记搜索</h1>
+                    <p>搜索您的学习笔记和资料</p>
+                </div>
+                <div class="theme-toggle-container">
+                    <select id="theme-select" class="theme-select" title="テーマ選択">
+                        <option value="light">☀️ ライトモード</option>
+                        <option value="dark">🌙 ダークモード</option>
+                        <option value="auto">🔄 システムに合わせる</option>
+                    </select>
+                </div>
+            </div>
             <a href="index.html" class="btn btn-link back-link">← 返回笔记列表</a>
         </div>
         <form id="search-form" class="search-form">
@@ -19,6 +30,10 @@
             <button type="submit" class="btn btn-primary">検索</button>
         </form>
 
-    <script src="js/search.js"></script>
+        <div id="search-results" class="search-results">
+            <!-- 搜索结果将在这里显示 -->
+        </div>
+
+    <script type="module" src="js/search.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 // 数据库文件
-$dbFile = __DIR__ . '/../../data/memo.db';
+$dbFile = __DIR__ . '/../data/memo.db';
 $db = new SQLite3($dbFile);
 
 // 获取 ID，可以是 GET 或 POST
