@@ -4,10 +4,11 @@ export async function getMemos() {
         const res = await fetch('api/get_memos.php');
         const text = await res.text();
         const data = JSON.parse(text);
-        return data || { memos: [] };
+
+       return Array.isArray(data?.memos) ? data.memos : [];
     } catch (err) {
         console.error('getMemos error:', err);
-        return { memos: [] };
+        return [] ;
     }
 }
 
@@ -99,3 +100,13 @@ export async function searchMemos(keyword) {
         return { success: false, memos: [], keyword, count: 0 };
     }
 }
+export const memoService = {
+    getMemos,
+    saveMemo,
+    updateMemo,
+    deleteMemo,
+    pinMemo,
+    exportJSON,
+    exportCSV,
+    searchMemos
+};

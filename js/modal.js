@@ -1,7 +1,8 @@
-// モーダル管理モジュール
+// modal.js
 import { escapeHtml } from './utils.js';
 
 export class ModalManager {
+
     constructor() {
         this.overlay = document.getElementById('modal-overlay');
         this.title = document.getElementById('modal-title');
@@ -10,17 +11,17 @@ export class ModalManager {
         this.closeBtn = document.getElementById('modal-close');
         this.cancelBtn = document.getElementById('modal-cancel');
         this.confirmBtn = document.getElementById('modal-confirm');
-        
+
         this.resolvePromise = null;
         this.rejectPromise = null;
-        
+
         this.initEventListeners();
     }
-    
+
     initEventListeners() {
         // 閉じるボタン
         this.closeBtn.addEventListener('click', () => this.hide());
-        
+
         // キャンセルボタン
         this.cancelBtn.addEventListener('click', () => {
             if (this.rejectPromise) {
@@ -28,7 +29,7 @@ export class ModalManager {
                 this.hide();
             }
         });
-        
+
         // 確認ボタン
         this.confirmBtn.addEventListener('click', () => {
             if (this.resolvePromise) {
@@ -36,109 +37,118 @@ export class ModalManager {
                 this.hide();
             }
         });
-        
-        // オーバーレイクリックで閉じる
+
+        //遮罩层（蒙板)
         this.overlay.addEventListener('click', (e) => {
-            if (e.target === this.overlay) {
-                if (this.rejectPromise) {
-                    this.rejectPromise(new Error('キャンセルされました'));
-                    this.hide();
-                }
-            }
+            if (e.target === this.overlay) this.handleCancel();
         });
-        
+
         // ESCキーで閉じる
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.overlay.style.display !== 'none') {
-                if (this.rejectPromise) {
-                    this.rejectPromise(new Error('キャンセルされました'));
-                    this.hide();
-                }
+                this.handleCancel();
             }
         });
     }
-    
-    show() {
-        this.overlay.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // 背景スクロール防止
+
+    handleCancel() {
+        if (this.rejectPromise) {
+            this.rejectPromise(new Error('キャンセルされました'));
+            this.hide();
+        }
     }
-    
-    hide() {
-        this.overlay.style.display = 'none';
-        document.body.style.overflow = ''; // 背景スクロール復元
-        this.resolvePromise = null;
-        this.rejectPromise = null;
-    }
-    
-    // 確認ダイアログ表示
-    confirm(title, message) {
-        return new Promise((resolve, reject) => {
-            this.title.textContent = title;
-            this.body.innerHTML = `<p>${message}</p>`;
-            
-            // 確認とキャンセルボタン表示
-            this.cancelBtn.style.display = 'inline-block';
-            this.confirmBtn.style.display = 'inline-block';
-            this.confirmBtn.textContent = '確認';
-            
-            this.resolvePromise = resolve;
-            this.rejectPromise = reject;
-            
-            this.show();
-        });
-    }
-    
-    // 警告メッセージ表示（OKボタンのみ）
-    alert(title, message) {
-        return new Promise((resolve) => {
-            this.title.textContent = title;
-            this.body.innerHTML = `<p>${message}</p>`;
-            
-            // OKボタンのみ表示
-            this.cancelBtn.style.display = 'none';
-            this.confirmBtn.style.display = 'inline-block';
-            this.confirmBtn.textContent = 'OK';
-            
-            this.resolvePromise = () => {
-                resolve();
-                return true;
-            };
-            
-            this.show();
-        });
-    }
-    
-    // カスタムコンテンツ表示
-    custom(title, contentHtml, options = {}) {
-        return new Promise((resolve, reject) => {
-            this.title.textContent = title;
-            this.body.innerHTML = contentHtml;
-            
-            // カスタムボタン設定
-            if (options.cancelText) {
+
+        show() {
+            this.overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; //防止背景滚动
+        }
+
+        hide() {
+            this.overlay.style.display = 'none';
+            document.body.style.overflow = ''; // 背景スクロール復元
+            this.resolvePromise = null;
+            this.rejectPromise = null;
+        }
+
+        // 抽象按钮显示/隐藏和文字设置
+        setButton(btn, text) {
+            if (text) {
+                btn.style.display = 'inline-block';
+                btn.textContent = text;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        // 确认弹窗
+        confirm(title, message) {
+            return new Promise((resolve, reject) => {
+                this.title.textContent = title;
+                this.body.innerHTML = `<p>${message}</p>`;
+
+                // 確認とキャンセルボタン表示
                 this.cancelBtn.style.display = 'inline-block';
-                this.cancelBtn.textContent = options.cancelText;
-            } else {
-                this.cancelBtn.style.display = 'none';
-            }
-            
-            if (options.confirmText) {
                 this.confirmBtn.style.display = 'inline-block';
-                this.confirmBtn.textContent = options.confirmText;
-            } else {
-                this.confirmBtn.style.display = 'none';
-            }
-            
-            this.resolvePromise = resolve;
-            this.rejectPromise = reject;
-            
-            this.show();
-        });
-    }
-    
-    // メモ詳細表示
-    showMemoDetail(memo) {
-        const content = `
+                this.confirmBtn.textContent = '確認';
+
+                this.resolvePromise = resolve;
+                this.rejectPromise = reject;
+
+                this.show();
+            });
+        }
+
+        // 警告メッセージ表示（OKボタンのみ）
+        alert(title, message) {
+            return new Promise((resolve) => {
+                this.title.textContent = title;
+                this.body.innerHTML = `<p>${message}</p>`;
+
+                // OKボタンのみ表示
+                this.cancelBtn.style.display = 'none';
+                this.confirmBtn.style.display = 'inline-block';
+                this.confirmBtn.textContent = 'OK';
+
+                this.resolvePromise = () => {
+                    resolve();
+                    return true;
+                };
+
+                this.show();
+            });
+        }
+
+        // カスタムコンテンツ表示
+        custom(title, contentHtml, options = {}) {
+            return new Promise((resolve, reject) => {
+                this.title.textContent = title;
+                this.body.innerHTML = contentHtml;
+
+                // カスタムボタン設定
+                if (options.cancelText) {
+                    this.cancelBtn.style.display = 'inline-block';
+                    this.cancelBtn.textContent = options.cancelText;
+                } else {
+                    this.cancelBtn.style.display = 'none';
+                }
+
+                if (options.confirmText) {
+                    this.confirmBtn.style.display = 'inline-block';
+                    this.confirmBtn.textContent = options.confirmText;
+                } else {
+                    this.confirmBtn.style.display = 'none';
+                }
+
+                this.resolvePromise = resolve;
+                this.rejectPromise = reject;
+
+                this.show();
+            });
+        }
+
+        // メモ詳細表示
+        showMemoDetail(memo) {
+            const content = `
             <div class="memo-detail">
                 <div class="detail-item">
                     <strong>タイトル:</strong>
@@ -158,20 +168,20 @@ export class ModalManager {
                 </div>
             </div>
         `;
-        
-        return this.custom(`メモ詳細: ${escapeHtml(memo.title || '')}`, content, {
-            cancelText: '閉じる',
-            confirmText: null
-        });
-    }
-    
-    // メモ内容フォーマット
-    formatMemoContent(content) {
-        // 改行を保持
-        const escaped = escapeHtml(content);
-        return escaped.replace(/\n/g, '<br>');
-    }
-}
 
-// グローバルモーダルマネージャーインスタンス作成
-export const modalManager = new ModalManager();
+            return this.custom(`メモ詳細: ${escapeHtml(memo.title || '')}`, content, {
+                cancelText: '閉じる',
+                confirmText: null
+            });
+        }
+
+        // メモ内容フォーマット
+        formatMemoContent(content) {
+            // 改行を保持
+            const escaped = escapeHtml(content);
+            return escaped.replace(/\n/g, '<br>');
+}
+}
+    
+    // グローバルモーダルマネージャーインスタンス作成
+    export const modalManager = new ModalManager();

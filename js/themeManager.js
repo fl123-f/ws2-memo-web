@@ -27,16 +27,28 @@ export class ThemeManager {
         }
 
         // 监听系统主题变化
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            // 只有在自动模式下才跟随系统
-            if (this.currentMode === 'auto') {
-                if (e.matches) {
-                    this.applyDarkMode();
-                } else {
-                    this.applyLightMode();
-                }
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        // 立即检查当前系统主题
+        this.handleSystemThemeChange(mediaQuery);
+        
+        // 添加事件监听器
+        mediaQuery.addEventListener('change', this.handleSystemThemeChange.bind(this));
+    }
+
+    handleSystemThemeChange(e) {
+        // 如果e是MediaQueryListEvent，使用e.matches
+        // 如果e是MediaQueryList，使用e.matches
+        const prefersDark = e.matches || e;
+        
+        // 只有在自动模式下才跟随系统
+        if (this.currentMode === 'auto') {
+            if (prefersDark) {
+                this.applyDarkMode();
+            } else {
+                this.applyLightMode();
             }
-        });
+        }
     }
 
     setMode(mode) {

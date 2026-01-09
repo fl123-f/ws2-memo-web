@@ -293,48 +293,137 @@ button:hover {
 
 
 /* ========================
-   备忘录列表文本显示
+   备忘录卡片样式
    ======================== */
 
 .memo-item {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 15px;
+    padding: 0;
     cursor: pointer;
     transition: all 0.3s ease;
     overflow: hidden;
-    max-height: 60px; /* 默认折叠高度 */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* 展开时高度自动适应内容 */
-.memo-item.expanded {
-    max-height: 1000px; /* 比实际内容大即可 */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    background-color: #fefefe;
+    box-shadow: var(--shadow-sm);
+    position: relative;
 }
 
 /* 鼠标悬停提示可点击 */
 .memo-item:hover {
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    box-shadow: var(--shadow);
+    border-color: var(--primary);
+    transform: translateY(-2px);
 }
 
-/* 标题强调展开状态 */
-.memo-item.expanded .memo-title {
-    font-weight: bold;
-    color: rgb(111, 34, 204);  /* 可以改成你喜欢的颜色 */
+/* 展开状态 */
+.memo-item.expanded {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-color: var(--primary);
 }
 
+/* 卡片头部 */
+.memo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+}
 
-/*正文换行显示*/
+.memo-item:hover .memo-header {
+    background: rgba(67, 97, 238, 0.05);
+}
+
+.memo-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+    margin-right: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.memo-date {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-right: 15px;
+}
+
+/* 按钮区域 */
+.memo-header button {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    padding: 5px 8px;
+    margin-left: 5px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.memo-header button:hover {
+    background: rgba(0,0,0,0.1);
+    color: var(--text);
+}
+
+.pin-btn:hover {
+    color: #ffc107 !important;
+}
+
+/* 卡片内容区域 */
+.memo-body-container {
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
 .memo-body {
-    white-space: pre-wrap; /* 保留换行符 */
-    word-break: break-word; /* 长单词换行 */
-    margin-top: 8px;
-    color: #333;
+    line-height: 1.6;
+    color: var(--text);
+    font-size: 1rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 分类标签 */
+.memo-category {
+    padding: 10px 15px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+}
+
+.memo-category::before {
+    content: "🏷️";
+    margin-right: 8px;
+}
+
+/* 展开/折叠指示器 */
+.memo-header::after {
+    content: "▼";
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-left: 10px;
+    transition: transform 0.3s ease;
+}
+
+.memo-item.expanded .memo-header::after {
+    transform: rotate(180deg);
+}
+
+/* 正文换行显示优化 */
+.memo-body br {
+    display: block;
+    content: "";
+    margin-bottom: 0.5em;
 }
 
 
