@@ -1,15 +1,66 @@
-// memoService.js 
-import { defaultApiClient, apiEndpoints } from './apiClient.js';
+// memoService.js - 直接使用fetch API版本
+
+const API_BASE_URL = '/ws2-memo-web/api';
+
+// API端点配置
+const apiEndpoints = {
+  memos: {
+    getAll: 'get_memos.php',
+    get: (id) => `get_memo.php?id=${id}`,
+    save: 'save_memo.php',
+    update: 'update_memo.php',
+    delete: (id) => `delete_memo.php?id=${id}`,
+    search: (keyword) => `search_memos.php?keyword=${encodeURIComponent(keyword)}`
+  },
+  importExport: {
+    exportJSON: 'import_export.php?action=export&format=json',
+    exportCSV: 'import_export.php?action=export&format=csv'
+  }
+};
+
+// 构建完整URL
+function buildUrl(endpoint) {
+  return `${API_BASE_URL}/${endpoint}`;
+}
+
+// 通用fetch请求函数
+async function apiRequest(url, method = 'GET', data = null) {
+  try {
+    const options = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    if (data && (method === 'POST' || method === 'PUT')) {
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error(`API请求失败 (${url}):`, error);
+    throw error;
+  }
+}
 
 class MemoService {
-  constructor(apiClient = defaultApiClient) {
-    this.apiClient = apiClient;
+  constructor() {
+    // 不再需要apiClient参数
   }
 
   // 获取所有备忘录
   async getMemos() {
     try {
-      const data = await this.apiClient.get(apiEndpoints.memos.getAll);
+      const url = buildUrl(apiEndpoints.memos.getAll);
+      const data = await apiRequest(url, 'GET');
       return Array.isArray(data?.memos) ? data.memos : [];
     } catch (error) {
       console.error('获取备忘录失败:', error);
@@ -20,7 +71,8 @@ class MemoService {
   // 获取单个备忘录
   async getMemo(id) {
     try {
-      return await this.apiClient.get(apiEndpoints.memos.get(id));
+      const url = buildUrl(apiEndpoints.memos.get(id));
+      return await apiRequest(url, 'GET');
     } catch (error) {
       console.error(`获取备忘录 ${id} 失败:`, error);
       return { success: false, error: error.message };
@@ -30,7 +82,8 @@ class MemoService {
   // 保存备忘录
   async saveMemo(title, content, category = '') {
     try {
-      return await this.apiClient.post(apiEndpoints.memos.save, {
+      const url = buildUrl(apiEndpoints.memos.save);
+      return await apiRequest(url, 'POST', {
         title,
         content,
         category
@@ -44,7 +97,8 @@ class MemoService {
   // 更新备忘录
   async updateMemo(id, title, content, category) {
     try {
-      return await this.apiClient.post(apiEndpoints.memos.update, {
+      const url = buildUrl(apiEndpoints.memos.update);
+      return await apiRequest(url, 'POST', {
         id,
         title,
         content,
@@ -59,7 +113,8 @@ class MemoService {
   // 置顶/取消置顶备忘录
   async pinMemo(id, is_pinned) {
     try {
-      return await this.apiClient.post(apiEndpoints.memos.update, {
+      const url = buildUrl(apiEndpoints.memos.update);
+      return await apiRequest(url, 'POST', {
         id,
         is_pinned
       });
@@ -72,7 +127,8 @@ class MemoService {
   // 删除备忘录
   async deleteMemo(id) {
     try {
-      return await this.apiClient.get(apiEndpoints.memos.delete(id));
+      const url = buildUrl(apiEndpoints.memos.delete(id));
+      return await apiRequest(url, 'GET');
     } catch (error) {
       console.error(`删除备忘录 ${id} 失败:`, error);
       return { success: false, error: error.message };
@@ -82,7 +138,8 @@ class MemoService {
   // 搜索备忘录
   async searchMemos(keyword) {
     try {
-      return await this.apiClient.get(apiEndpoints.memos.search(keyword));
+      const url = buildUrl(apiEndpoints.memos.search(keyword));
+      return await apiRequest(url, 'GET');
     } catch (error) {
       console.error(`搜索备忘录 "${keyword}" 失败:`, error);
       return { success: false, memos: [], keyword, count: 0 };
@@ -92,7 +149,8 @@ class MemoService {
   // 导出为JSON
   async exportJSON() {
     try {
-      return await this.apiClient.get(apiEndpoints.importExport.exportJSON);
+      const url = buildUrl(apiEndpoints.importExport.exportJSON);
+      return await apiRequest(url, 'GET');
     } catch (error) {
       console.error('导出JSON失败:', error);
       return [];
@@ -102,7 +160,12 @@ class MemoService {
   // 导出为CSV
   async exportCSV() {
     try {
-      return await this.apiClient.get(apiEndpoints.importExport.exportCSV);
+      const url = buildUrl(apiEndpoints.importExport.exportCSV);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.text();
     } catch (error) {
       console.error('导出CSV失败:', error);
       return '';
