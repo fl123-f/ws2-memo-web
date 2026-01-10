@@ -1,6 +1,6 @@
 // 搜索功能实现
-import * as memoService from './memoService.js';
-import { modalManager } from './modal.js';
+import * as memoService from '../services/memoService.js';
+import { modalManager } from '../ui/modal.js';
 
 // 主题模式管理
 class ThemeManager {

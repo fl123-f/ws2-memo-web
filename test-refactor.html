@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重构测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .test-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .log {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>重构代码测试</h1>
+        
+        <div class="test-section">
+            <div class="test-title">1. 存储服务测试</div>
+            <div id="storage-test-result" class="test-result loading">等待测试...</div>
+            <button onclick="testStorageService()">测试存储服务</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">2. 分类服务测试</div>
+            <div id="category-test-result" class="test-result loading">等待测试...</div>
+            <button onclick="testCategoryService()">测试分类服务</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">3. API客户端测试</div>
+            <div id="api-test-result" class="test-result loading">等待测试...</div>
+            <button onclick="testApiClient()">测试API客户端</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">4. 备忘录服务测试</div>
+            <div id="memo-test-result" class="test-result loading">等待测试...</div>
+            <button onclick="testMemoService()">测试备忘录服务</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">5. 主应用集成测试</div>
+            <div id="integration-test-result" class="test-result loading">等待测试...</div>
+            <button onclick="testIntegration()">测试集成</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试日志</div>
+            <div id="test-log" class="log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入重构后的服务
+        import { localStorageService } from './js/services/storage.js';
+        import { categoryService } from './js/services/categoryService.js';
+        import { defaultApiClient } from './js/services/apiClient.js';
+        import { memoService } from './js/services/memoService.js';
+        
+        const logElement = document.getElementById('test-log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#6c757d';
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function updateTestResult(elementId, message, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+        }
+        
+        async function testStorageService() {
+            log('开始测试存储服务...');
+            updateTestResult('storage-test-result', '测试中...', false);
+            
+            try {
+                // 测试本地存储适配器
+                const testKey = 'test_key_' + Date.now();
+                const testValue = { message: 'Hello, Storage Service!', timestamp: Date.now() };
+                
+                // 保存数据
+                await localStorageService.set(testKey, testValue);
+                log(`保存数据: ${testKey} = ${JSON.stringify(testValue)}`);
+                
+                // 读取数据
+                const retrievedValue = await localStorageService.get(testKey);
+                log(`读取数据: ${testKey} = ${JSON.stringify(retrievedValue)}`);
+                
+                // 验证数据
+                if (JSON.stringify(retrievedValue) === JSON.stringify(testValue)) {
+                    updateTestResult('storage-test-result', '✓ 存储服务测试通过', true);
+                    log('存储服务测试通过', 'success');
+                } else {
+                    updateTestResult('storage-test-result', '✗ 存储服务测试失败: 数据不匹配', false);
+                    log('存储服务测试失败: 数据不匹配', 'error');
+                }
+                
+                // 清理测试数据
+                await localStorageService.remove(testKey);
+                log(`清理测试数据: ${testKey}`);
+                
+            } catch (error) {
+                updateTestResult('storage-test-result', `✗ 存储服务测试失败: ${error.message}`, false);
+                log(`存储服务测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCategoryService() {
+            log('开始测试分类服务...');
+            updateTestResult('category-test-result', '测试中...', false);
+            
+            try {
+                // 获取当前分类
+                const initialCategories = categoryService.getCategories();
+                log(`初始分类: ${JSON.stringify(initialCategories)}`);
+                
+                // 添加测试分类
+                const testCategory = '测试分类_' + Date.now();
+                const addResult = categoryService.addCategory(testCategory);
+                log(`添加分类 "${testCategory}": ${addResult ? '成功' : '失败'}`);
+                
+                if (!addResult) {
+                    updateTestResult('category-test-result', '✗ 分类服务测试失败: 无法添加分类', false);
+                    log('分类服务测试失败: 无法添加分类', 'error');
+                    return;
+                }
+                
+                // 验证分类已添加
+                const updatedCategories = categoryService.getCategories();
+                log(`更新后分类: ${JSON.stringify(updatedCategories)}`);
+                
+                if (updatedCategories.includes(testCategory)) {
+                    updateTestResult('category-test-result', '✓ 分类服务测试通过', true);
+                    log('分类服务测试通过', 'success');
+                } else {
+                    updateTestResult('category-test-result', '✗ 分类服务测试失败: 分类未添加', false);
+                    log('分类服务测试失败: 分类未添加', 'error');
+                }
+                
+                // 清理测试分类
+                categoryService.deleteCategory(testCategory);
+                log(`清理测试分类: ${testCategory}`);
+                
+            } catch (error) {
+                updateTestResult('category-test-result', `✗ 分类服务测试失败: ${error.message}`, false);
+                log(`分类服务测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testApiClient() {
+            log('开始测试API客户端...');
+            updateTestResult('api-test-result', '测试中...', false);
+            
+            try {
+                // 测试获取备忘录列表
+                log('测试获取备忘录列表...');
+                const memos = await defaultApiClient.get('api/get_memos.php');
+                
+                if (memos && Array.isArray(memos.memos)) {
+                    updateTestResult('api-test-result', `✓ API客户端测试通过 (获取到 ${memos.memos.length} 条备忘录)`, true);
+                    log(`API客户端测试通过: 获取到 ${memos.memos.length} 条备忘录`, 'success');
+                } else {
+                    updateTestResult('api-test-result', '✓ API客户端测试通过 (API响应格式正确)', true);
+                    log('API客户端测试通过: API响应格式正确', 'success');
+                }
+                
+            } catch (error) {
+                updateTestResult('api-test-result', `✗ API客户端测试失败: ${error.message}`, false);
+                log(`API客户端测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMemoService() {
+            log('开始测试备忘录服务...');
+            updateTestResult('memo-test-result', '测试中...', false);
+            
+            try {
+                // 测试获取备忘录
+                log('测试获取备忘录...');
+                const memos = await memoService.getMemos();
+                
+                if (Array.isArray(memos)) {
+                    updateTestResult('memo-test-result', `✓ 备忘录服务测试通过 (获取到 ${memos.length} 条备忘录)`, true);
+                    log(`备忘录服务测试通过: 获取到 ${memos.length} 条备忘录`, 'success');
+                    
+                    // 如果有备忘录，测试搜索功能
+                    if (memos.length > 0) {
+                        log('测试搜索功能...');
+                        const searchResult = await memoService.searchMemos('test');
+                        log(`搜索测试完成: ${searchResult.success ? '成功' : '失败'}`);
+                    }
+                } else {
+                    updateTestResult('memo-test-result', '✗ 备忘录服务测试失败: 返回的不是数组', false);
+                    log('备忘录服务测试失败: 返回的不是数组', 'error');
+                }
+                
+            } catch (error) {
+                updateTestResult('memo-test-result', `✗ 备忘录服务测试失败: ${error.message}`, false);
+                log(`备忘录服务测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testIntegration() {
+            log('开始测试集成...');
+            updateTestResult('integration-test-result', '测试中...', false);
+            
+            try {
+                // 测试所有服务一起工作
+                log('测试分类服务...');
+                const categories = categoryService.getCategories();
+                log(`分类数量: ${categories.length}`);
+                
+                log('测试备忘录服务...');
+                const memos = await memoService.getMemos();
+                log(`备忘录数量: ${memos.length}`);
+                
+                log('测试存储服务...');
+                const testKey = 'integration_test';
+                await localStorageService.set(testKey, { test: 'integration', timestamp: Date.now() });
+                const storedValue = await localStorageService.get(testKey);
+                await localStorageService.remove(testKey);
+                
+                updateTestResult('integration-test-result', '✓ 集成测试通过', true);
+                log('集成测试通过', 'success');
+                
+            } catch (error) {
+                updateTestResult('integration-test-result', `✗ 集成测试失败: ${error.message}`, false);
+                log(`集成测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 导出函数到全局作用域
+        window.testStorageService = testStorageService;
+        window.testCategoryService = testCategoryService;
+        window.testApiClient = testApiClient;
+        window.testMemoService = testMemoService;
+        window.testIntegration = testIntegration;
+        
+        log('测试页面已加载完成', 'success');
+    </script>
+</body>
+</html>

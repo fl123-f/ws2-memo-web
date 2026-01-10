@@ -1,4 +1,4 @@
-import { escapeHtml } from './utils.js';
+import { escapeHtml } from '../utils/utils.js';
 
 // 文本换行函数：每行大约40个字符后换行
 function wrapText(text, maxLineLength = 40) {

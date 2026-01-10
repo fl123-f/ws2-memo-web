@@ -1,8 +1,16 @@
 // draftService.js
-export const draftService = (() => {
-    let lastSavedDraft = null;
-    let draftIndicatorVisible = false;
 
+export const draftService = (() => {
+
+    //保存最后一次草稿，防止重复保存
+    let lastSavedDraft = null;
+
+
+    /**
+     * 保存草稿
+     * 参数对象 { titleInput, contentInput, categorySelect, isEditMode, currentEditId }
+     * 只保存表单内容和编辑状态，不重复保存相同内容
+     */
     function saveDraft(titleInput, contentInput, categorySelect, isEditMode, currentEditId) {
         const draft = {
             title: titleInput.value.trim(),
@@ -12,64 +20,61 @@ export const draftService = (() => {
             currentEditId,
             timestamp: new Date().toISOString()
         };
+
+        //内容为空不保存
         if (!draft.title && !draft.content && !draft.category) return;
-        if (JSON.stringify(draft) === JSON.stringify(lastSavedDraft)) return;
+
+        // 只比较关键字段，避免重复保存
+        if (
+            lastSavedDraft &&
+            draft.title === lastSavedDraft.title &&
+            draft.content === lastSavedDraft.content &&
+            draft.category === lastSavedDraft.category
+        ) return;
 
         localStorage.setItem('memo_draft', JSON.stringify(draft));
         lastSavedDraft = draft;
-        showDraftIndicator();
+        
     }
 
+
+    /**
+     * 恢复草稿
+     * 会把表单内容填回
+     * 返回编辑信息 { isEditMode, currentEditId }，没有草稿返回 {}
+     */
     function restoreDraft(titleInput, contentInput, categorySelect, saveBtn) {
         const draftJson = localStorage.getItem('memo_draft');
         if (!draftJson) return;
 
         try {
             const draft = JSON.parse(draftJson);
-            const draftTime = new Date(draft.timestamp);
-            if ((new Date() - draftTime) / (1000 * 60 * 60) > 24) {
-                localStorage.removeItem('memo_draft');
-                return;
-            }
 
+            // 填充表单
             titleInput.value = draft.title || '';
             contentInput.value = draft.content || '';
             categorySelect.value = draft.category || '';
+
             if (draft.isEditMode && draft.currentEditId) {
-                saveBtn.textContent = '🔄 更新';
                 return { isEditMode: draft.isEditMode, currentEditId: draft.currentEditId };
             }
-        } catch {
+        } catch (err) {
+            console.warn('草稿解析失败，已清除', err);
             localStorage.removeItem('memo_draft');
         }
+
         return {};
     }
 
+    /**
+     * 清空草稿
+     * 可选resetFormCallback:用于清空表单
+     */
     function clearDraft(resetFormCallback) {
         localStorage.removeItem('memo_draft');
         lastSavedDraft = null;
-        draftIndicatorVisible = false;
+        
         if (resetFormCallback) resetFormCallback();
-    }
-
-    function showDraftIndicator() {
-        if (draftIndicatorVisible) return;
-        draftIndicatorVisible = true;
-
-        const indicator = document.createElement('div');
-        indicator.className = 'draft-indicator';
-        indicator.innerHTML = `<span>草稿已保存</span><button class="clear-draft-btn">清除</button>`;
-        document.body.appendChild(indicator);
-
-        indicator.querySelector('.clear-draft-btn').addEventListener('click', () => {
-            clearDraft();
-            indicator.remove();
-        });
-
-        setTimeout(() => {
-            if (document.body.contains(indicator)) indicator.remove();
-            draftIndicatorVisible = false;
-        }, 3000);
     }
 
     return { saveDraft, restoreDraft, clearDraft };

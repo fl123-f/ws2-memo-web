@@ -1,12 +1,12 @@
-import { memoService } from './memoService.js';
-import { draftService } from './draftService.js';
-import { undoService } from './undoService.js';
-import { renderMemoList } from './memoUI.js';
-import { debounce } from './utils.js';
-import { renderPagination } from './pagination.js';
-import { modalManager } from './modal.js';
-import { categoryService } from './categoryService.js';
-import { ThemeManager } from './themeManager.js';
+import { memoService } from './services/memoService.js';
+import { draftService } from './services/draftService.js';
+import { undoService } from './services/undoService.js';
+import { renderMemoList } from './ui/memoUI.js';
+import { debounce } from './utils/utils.js';
+import { renderPagination } from './ui/pagination.js';
+import { modalManager } from './ui/modal.js';
+import { categoryService } from './services/categoryService.js';
+import { ThemeManager } from './ui/themeManager.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const saveBtn = document.getElementById('save-memo');
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEditId = null;
 
     // ---------------- 分类刷新 ----------------
+    /*
     function renderCategoryList() {
         if (!categoryList) return;
         categoryList.innerHTML = '';
@@ -54,6 +55,48 @@ document.addEventListener('DOMContentLoaded', async () => {
             categorySelect.appendChild(option);
         });
     }
+*/
+
+
+    function extractCategoriesFromMemos(memos) {
+        const set = new Set();
+        memos.forEach(m => {
+            if (m.category) set.add(m.category);
+        });
+        return Array.from(set);
+    }
+
+    function renderCategoryList() {
+        if (!categoryList) return;
+        categoryList.innerHTML = '';
+
+        const categories = extractCategoriesFromMemos(allMemos);
+
+        categories.forEach(name => {
+            const li = document.createElement('li');
+            li.textContent = name;
+            li.dataset.category = name;
+            categoryList.appendChild(li);
+        });
+    }
+
+    function renderCategorySelect() {
+        if (!categorySelect) return;
+
+        categorySelect.innerHTML = '<option value="">未分类</option>';
+
+        const categories = extractCategoriesFromMemos(allMemos);
+
+        categories.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            categorySelect.appendChild(option);
+        });
+    }
+
+
+
 
     // ---------------- 备忘录加载 ----------------
     async function loadMemos() {
@@ -61,6 +104,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         allMemos.forEach(m => {
             if (m.isExpanded === undefined) m.isExpanded = false;
         });
+
+        renderCategoryList();
+        renderCategorySelect();
+        
         applyFilters();
     }
 
@@ -111,11 +158,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------- 搜索功能 ----------------
     const searchInput = document.getElementById('memo-search');
     let searchKeyword = '';
-    
+
     searchInput?.addEventListener('input', debounce(async (e) => {
         searchKeyword = e.target.value.trim();
         currentPage = 1;
-        
+
         if (searchKeyword) {
             // 执行搜索
             const searchResult = await memoService.searchMemos(searchKeyword);
@@ -132,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadMemos();
             return;
         }
-        
+
         applyFilters();
     }, 500));
 
@@ -202,10 +249,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     memoList.addEventListener('click', e => {
         const memoDiv = e.target.closest('.memo-item');
         if (!memoDiv) return;
-        
+
         // 如果点击的是按钮，不触发展开
         if (e.target.closest('button')) return;
-        
+
         // 如果点击的是.memo-header区域（但不是按钮），允许展开
         const memoId = memoDiv.dataset.id;
         const memo = allMemos.find(m => m.id == memoId);
@@ -213,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 切换展开状态
         memo.isExpanded = !memo.isExpanded;
-        
+
         // 重新应用过滤器以使用新的wrapText函数重新渲染
         applyFilters();
     });
@@ -288,7 +335,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------- 初始化 ----------------
     // 初始化主题管理器
     new ThemeManager();
-    
+
     renderCategoryList();
     renderCategorySelect();
     await loadMemos();

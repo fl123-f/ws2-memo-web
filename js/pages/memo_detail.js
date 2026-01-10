@@ -1,5 +1,5 @@
 // 备忘录详情页面JavaScript
-import { modalManager } from './modal.js';
+import { modalManager } from '../ui/modal.js';
 
 // 主题模式管理
 class ThemeManager {

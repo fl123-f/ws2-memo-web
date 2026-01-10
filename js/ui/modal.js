@@ -1,5 +1,5 @@
 // modal.js
-import { escapeHtml } from './utils.js';
+import { escapeHtml } from '../utils/utils.js';
 
 export class ModalManager {
 

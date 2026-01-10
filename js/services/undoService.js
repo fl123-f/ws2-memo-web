@@ -1,5 +1,5 @@
 // undoService.js
-import { escapeHtml } from './utils.js';
+import { escapeHtml } from '../utils/utils.js';
 import { memoService } from './memoService.js';
 
 export const undoService = (() => {
