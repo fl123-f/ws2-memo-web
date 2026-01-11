@@ -31,32 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEditId = null;
 
     // ---------------- 分类刷新 ----------------
-    /*
-    function renderCategoryList() {
-        if (!categoryList) return;
-        categoryList.innerHTML = '';
-        const categories = categoryService.getCategories();
-        categories.forEach(name => {
-            const li = document.createElement('li');
-            li.textContent = name;
-            li.dataset.category = name;
-            categoryList.appendChild(li);
-        });
-    }
-
-    function renderCategorySelect() {
-        if (!categorySelect) return;
-        categorySelect.innerHTML = '<option value="">未分类</option>';
-        const categories = categoryService.getCategories();
-        categories.forEach(name => {
-            const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name;
-            categorySelect.appendChild(option);
-        });
-    }
-*/
-
 
     function extractCategoriesFromMemos(memos) {
         const set = new Set();
@@ -100,16 +74,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ---------------- 备忘录加载 ----------------
     async function loadMemos() {
-        allMemos = await memoService.getMemos();
+        const memos = await memoService.getMemos();
+        
+        // memoService.getMemos() 返回数组，不是对象
+        allMemos = Array.isArray(memos) ? memos : [];
+
         allMemos.forEach(m => {
             if (m.isExpanded === undefined) m.isExpanded = false;
         });
 
         renderCategoryList();
         renderCategorySelect();
-        
         applyFilters();
     }
+
+
+
 
     function applyFilters() {
         filteredMemos = currentCategory
@@ -245,6 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     isEditMode = draftState.isEditMode || false;
     currentEditId = draftState.currentEditId || null;
 
+
     // ---------------- 卡片展开 ----------------
     memoList.addEventListener('click', e => {
         const memoDiv = e.target.closest('.memo-item');
@@ -268,18 +249,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------- 新增分类示例按钮（可根据需求绑定） ----------------
     const addCategoryBtn = document.getElementById('add-category');
     addCategoryBtn?.addEventListener('click', async () => {
-        const { value: name } = await modalManager.custom('新增分类', `<input type="text" id="new-category" placeholder="分类名称">`, {
-            cancelText: '取消',
-            confirmText: '添加'
-        });
-        const inputEl = document.getElementById('new-category');
-        if (!inputEl) return;
-        const categoryName = inputEl.value.trim();
-        if (!categoryName) return modalManager.alert('错误', '分类名称不能为空');
+        let categoryName;
 
-        const success = categoryService.addCategory(categoryName);
-        if (!success) return modalManager.alert('错误', '该分类已存在');
+        try {
+            await modalManager.custom(
+                '新增分类',
+                `<input type="text" id="new-category" placeholder="分类名称" style="width: 100%; padding: 8px; box-sizing: border-box;">`,
+                { cancelText: '取消', confirmText: '新增' }
+            );
 
+            categoryName = document.getElementById('new-category').value.trim();
+        } catch (err) {
+            return; // 用户取消
+        }
+
+        if (!categoryName) {
+            modalManager.alert('错误', '分类名称不能为空');
+            return;
+        }
+        if (!categoryService.addCategory(categoryName)) {
+            modalManager.alert('错误', '分类已存在');
+            return;
+        }
         // 刷新列表
         renderCategoryList();
         renderCategorySelect();
