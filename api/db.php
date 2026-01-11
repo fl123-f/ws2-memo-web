@@ -70,4 +70,63 @@ class DB {
     public function getConnection() {
         return $this->db;
     }
+
+    // 插入新备忘录（来自 SQLite3Helper）
+    public function insertMemo($title, $content, $category = '') {
+        $title = trim($title);
+        $content = trim($content);
+        $category = trim($category);
+
+        if ($title === '' || $content === '') {
+            return ['success' => false, 'message' => 'タイトルと内容は必須です'];
+        }
+
+        $sql = "INSERT INTO memos (title, content, category, date) 
+                VALUES (:title, :content, :category, :date)";
+        
+        $params = [
+            ':title' => $title,
+            ':content' => $content,
+            ':category' => $category,
+            ':date' => date('Y-m-d H:i:s')
+        ];
+
+        $result = $this->execute($sql, $params);
+        
+        if ($result) {
+            return ['success' => true];
+        } else {
+            return ['success' => false, 'message' => 'データベースに保存できませんでした'];
+        }
+    }
+
+    // 获取所有备忘录（按置顶和创建时间降序）
+    public function getAllMemos() {
+        $sql = "SELECT * FROM memos ORDER BY is_pinned DESC, created_at DESC";
+        return $this->query($sql);
+    }
+
+    // 更新备忘录
+    public function updateMemo($id, $title, $content, $category = '') {
+        $sql = "UPDATE memos SET title = :title, content = :content, category = :category WHERE id = :id";
+        $params = [
+            ':title' => $title,
+            ':content' => $content,
+            ':category' => $category,
+            ':id' => $id
+        ];
+        return $this->execute($sql, $params);
+    }
+
+    // 根据 ID 获取单条备忘录
+    public function getMemoById($id) {
+        $id = (int)$id;
+        if ($id <= 0) return null;
+        
+        $sql = "SELECT * FROM memos WHERE id = :id";
+        $params = [':id' => $id];
+        $result = $this->query($sql, $params);
+        
+        return !empty($result) ? $result[0] : null;
+    }
 }
