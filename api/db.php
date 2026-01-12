@@ -37,6 +37,8 @@ class DB {
         ");
     }
 
+    
+
     // 执行查询（返回结果数组）
     public function query($sql, $params = []) {
         $stmt = $this->db->prepare($sql);

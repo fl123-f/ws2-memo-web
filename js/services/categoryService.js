@@ -113,7 +113,7 @@ const defaultCategoryService = new CategoryService();
 export { CategoryService, defaultCategoryService };
 
 // 保持向后兼容的旧接口
-export const categoryService = (() => {
+/*export const categoryService = (() => {
   const service = defaultCategoryService;
   
   return {
@@ -131,7 +131,7 @@ export const categoryService = (() => {
       // 旧版本没有返回值，我们保持相同行为
     }
   };
-})();
+})();*/
 
 // 默认导出
 export default defaultCategoryService;

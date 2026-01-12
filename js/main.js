@@ -5,7 +5,7 @@ import { renderMemoList } from './ui/memoUI.js';
 import { debounce } from './utils/utils.js';
 import { renderPagination } from './ui/pagination.js';
 import { modalManager } from './ui/modal.js';
-import { categoryService } from './services/categoryService.js';
+import categoryService from './services/categoryService.js';
 import { ThemeManager } from './ui/themeManager.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
